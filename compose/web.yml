@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: clinica-web
+    image: compose-web:latest
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ../web/src:/var/www/html
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - clinica_net
+
+networks:
+  clinica_net:
+    name: clinica_net
