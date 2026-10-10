@@ -1,11 +1,13 @@
 <?php
-// Valores retirados do seu ficheiro .env
-$host = 'db'; 
-$dbname = 'clinica';
-$user = 'clinica';
-$pass = 'Clinica123';
+$host   = getenv('DB_HOST') ?: 'db';
+$dbname = getenv('DB_NAME') ?: 'clinica';
+$user   = getenv('DB_USER') ?: 'clinica';
+$pass   = getenv('DB_PASSWORD');
+if ($pass === false) {
+    throw new RuntimeException('DB_PASSWORD não definida');
+}
 
-// Estabelece a ligação e cria a variável $pdo
-$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-?>
+$pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_TIMEOUT => 2,
+]);

@@ -13,11 +13,9 @@ try {
         'hostname' => gethostname(),
         'timestamp' => date('Y-m-d H:i:s')
     ]);
-} catch (Exception $e) {
+} catch (Throwable $e) {
+    error_log('health: ' . $e->getMessage());
     http_response_code(503);
-    echo json_encode([
-        'status' => 'error',
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['status' => 'error']);
 }
 ?>

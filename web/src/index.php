@@ -224,8 +224,8 @@ if ($page === 'exercicios') {
                         <?php foreach ($pacientes as $pac): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($pac['nome']); ?></td>
-                                <td><?php echo $pac['data_nascimento']; ?></td>
-                                <td><?php echo $pac['contacto']; ?></td>
+                                <td><?php echo htmlspecialchars($pac['data_nascimento']); ?></td>
+                                <td><?php echo htmlspecialchars($pac['contacto']); ?></td>
                                 <td><?php echo $pac['created_at']; ?></td>
                                 <td>
                                     <a class="btn" href="?page=historico&paciente_id=<?php echo $pac['id']; ?>">Ver Histórico</a>

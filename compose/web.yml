@@ -5,8 +5,9 @@ services:
       dockerfile: Dockerfile
     container_name: clinica-web
     image: compose-web:latest
+    hostname: ${VM_NAME:-vm1}-web
     environment:
-      DB_HOST: db
+      DB_HOST: ${DB_HOST:-db}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
