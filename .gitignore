@@ -1,3 +1,6 @@
 .env
 .vagrant/
 *.log
+node_modules/
+dist/
+.DS_Store

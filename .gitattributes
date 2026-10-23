@@ -1,0 +1,10 @@
+* text=auto
+# ficheiros que correm em Linux têm de ter fins de linha LF (senão partem dentro da VM)
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.conf text eol=lf
+*.cnf text eol=lf
+*.cfg text eol=lf
+Dockerfile text eol=lf
+Vagrantfile text eol=lf
