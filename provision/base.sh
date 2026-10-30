@@ -22,3 +22,11 @@ apt-get install -y keepalived curl jq
 # O HAProxy tem de poder fazer bind no VIP mesmo na VM que não o tem
 echo "net.ipv4.ip_nonlocal_bind=1" > /etc/sysctl.d/99-ha.conf
 sysctl --system
+
+# Copia o script de verificação e a configuração desta VM (vm1 ou vm2)
+install -m 755 /vagrant/keepalived/check_haproxy.sh /etc/keepalived/check_haproxy.sh
+install -m 644 /vagrant/keepalived/keepalived.conf.$(hostname) /etc/keepalived/keepalived.conf
+
+# Arranca o Keepalived e deixa-o ligar no boot
+systemctl enable keepalived
+systemctl restart keepalived

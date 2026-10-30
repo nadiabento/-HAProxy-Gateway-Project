@@ -1,0 +1,39 @@
+# VM2 = BACKUP: fica à espera e assume o VIP se a VM1 falhar.
+
+global_defs {
+    router_id VM2                  # nome desta VM no VRRP
+    enable_script_security
+    script_user root
+}
+
+# Mesma verificação do HAProxy da VM1
+vrrp_script check_haproxy {
+    script "/etc/keepalived/check_haproxy.sh"
+    interval 1
+    timeout 1
+    fall 2
+    rise 1
+    weight -30
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface eth1
+    virtual_router_id 51           # igual à VM1
+    priority 100                   # menor que a VM1 (120)
+    advert_int 0.5                 # igual à VM1
+    version 3
+
+    unicast_src_ip 192.168.56.12   # IP desta VM
+    unicast_peer {
+        192.168.56.11              # IP da outra VM
+    }
+
+    virtual_ipaddress {
+        192.168.56.10/24 dev eth1  # mesmo VIP da VM1
+    }
+
+    track_script {
+        check_haproxy
+    }
+}

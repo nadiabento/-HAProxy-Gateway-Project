@@ -1,0 +1,39 @@
+# VM1 = MASTER: é quem tem o IP virtual (VIP) em condições normais.
+
+global_defs {
+    router_id VM1                  # nome desta VM no VRRP
+    enable_script_security
+    script_user root
+}
+
+# Verifica de segundo a segundo se o HAProxy está vivo
+vrrp_script check_haproxy {
+    script "/etc/keepalived/check_haproxy.sh"
+    interval 1                     # corre a cada 1 s
+    timeout 1
+    fall 2                         # 2 falhas seguidas = HAProxy em baixo
+    rise 1                         # 1 sucesso = HAProxy recuperado
+    weight -30                     # se falhar, perde 30 de prioridade
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface eth1                 # placa da rede privada
+    virtual_router_id 51           # igual nas duas VMs
+    priority 120                   # maior que a VM2, por isso fica MASTER
+    advert_int 0.5                 # avisa a VM2 a cada 0,5 s (failover < 2 s)
+    version 3
+
+    unicast_src_ip 192.168.56.11   # IP desta VM
+    unicast_peer {
+        192.168.56.12              # IP da outra VM
+    }
+
+    virtual_ipaddress {
+        192.168.56.10/24 dev eth1  # o VIP que os clientes usam
+    }
+
+    track_script {
+        check_haproxy              # liga a verificação do HAProxy
+    }
+}
