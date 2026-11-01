@@ -1,0 +1,30 @@
+# Serviço "backend" (o frontend/nginx encaminha /api para http://backend:3000).
+# Sem depends_on da base de dados: na vm2 ela está na vm1.
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: clinica-backend
+    image: clinica-backend:latest
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      VM_NAME: ${VM_NAME:-vm1}
+      API_PORT: 3000
+      NODE_ENV: ${NODE_ENV:-production}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-false}
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+    ports:
+      - "127.0.0.1:3000:3000" # só para testar a partir da própria máquina
+    networks:
+      - clinica_net
+
+networks:
+  clinica_net:
+    name: clinica_net
