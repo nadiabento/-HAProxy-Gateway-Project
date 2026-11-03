@@ -1,0 +1,23 @@
+# Base de dados na nuvem: junta-se ao compose/db.yml e guarda os dados no volume persistente.
+# Uso (só na instância 1):
+#   docker compose --env-file .env -f compose/db.yml -f cloud/db/compose.cloud.db.yml up -d --build
+# Antes: o volume do fornecedor tem de estar montado em /mnt/dados e a pasta criada DENTRO dele:
+#   sudo mkdir -p /mnt/dados/mariadb /mnt/dados/backups
+# Se o volume não estiver montado, a pasta não existe e a base de dados NÃO arranca (é de propósito:
+# evita criar uma base de dados vazia no disco da instância).
+services:
+  db:
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DB_DATA_DIR:-/mnt/dados/mariadb}
