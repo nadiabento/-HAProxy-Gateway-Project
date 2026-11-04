@@ -1,7 +1,7 @@
 // PROVISÓRIO (Nadia). A Jessica fica com este ficheiro e pode acrescentar mais verificações.
 // Devolve sempre 200 com o estado da base de dados, para o HAProxy não tirar a vm2 só porque a BD está na vm1.
 const express = require("express");
-const sequelize = require("../config/database");
+const sequelize = require("../config/sequelize");
 
 const router = express.Router();
 

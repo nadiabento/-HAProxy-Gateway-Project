@@ -1,6 +1,6 @@
 // As tabelas de ligação perfil_utilizador e fisioterapeuta_paciente não têm
 // ficheiro: o belongsToMany cria-as sozinho no sequelize.sync().
-const sequelize = require("../config/database");
+const sequelize = require("../config/sequelize");
 
 const Utilizador = require("./Utilizador")(sequelize);
 const Perfil = require("./Perfil")(sequelize);

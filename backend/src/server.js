@@ -1,6 +1,6 @@
 // Nadia: arranque do servidor. Espera pela base de dados e fecha com cuidado.
 const app = require("./app");
-const sequelize = require("./config/database");
+const sequelize = require("./config/sequelize");
 
 const PORT = Number(process.env.API_PORT || 3000);
 
