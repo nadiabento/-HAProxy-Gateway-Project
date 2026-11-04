@@ -8,6 +8,7 @@ const {
   Paciente,
   Fisioterapeuta,
   Rececionista,
+  Administrador,
   Consulta,
   Tecnica,
 } = require("../src/models");
@@ -112,6 +113,7 @@ async function semear() {
     especialidade: "Reabilitação",
   });
   await Rececionista.create({ dadosPessoaisId: dMarta.id });
+    await Administrador.create({ dadosPessoaisId: dAna.id });
   const joao = await Paciente.create({ dadosPessoaisId: dJoao.id });
   const maria = await Paciente.create({ dadosPessoaisId: dMaria.id });
   const manel = await Paciente.create({ dadosPessoaisId: dManel.id });

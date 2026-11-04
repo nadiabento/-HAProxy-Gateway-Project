@@ -8,6 +8,7 @@ const DadosPessoais = require("./DadosPessoais")(sequelize);
 const Paciente = require("./Paciente")(sequelize);
 const Fisioterapeuta = require("./Fisioterapeuta")(sequelize);
 const Rececionista = require("./Rececionista")(sequelize);
+const Administrador = require("./Administrador")(sequelize);
 const Consulta = require("./Consulta")(sequelize);
 const Tecnica = require("./Tecnica")(sequelize);
 const ConsultaTecnica = require("./ConsultaTecnica")(sequelize);
@@ -28,6 +29,7 @@ for (const [Modelo, alias] of [
   [Paciente, "paciente"],
   [Fisioterapeuta, "fisioterapeuta"],
   [Rececionista, "rececionista"],
+  [Administrador, "administrador"],
 ]) {
   DadosPessoais.hasOne(Modelo, {
     foreignKey: "dadosPessoaisId",
@@ -111,6 +113,7 @@ module.exports = {
   Paciente,
   Fisioterapeuta,
   Rececionista,
+  Administrador,
   Consulta,
   Tecnica,
   ConsultaTecnica,
