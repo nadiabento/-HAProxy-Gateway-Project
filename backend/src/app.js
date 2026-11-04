@@ -8,7 +8,7 @@ app.use(express.json());
 
 // ---- rotas (cada dono acrescenta a sua linha quando o ficheiro existir) ----
 app.use("/api", require("./routes/health")); // Jessica (versão provisória da Nadia)
-// app.use('/api/auth', require('./routes/auth'));                        // Nadia
+app.use("/api/auth", require("./routes/auth")); // Nadia
 // app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Nadia
 // app.use('/api/ausencias', require('./routes/ausencias'));              // Nadia
 // app.use('/api/substituicoes', require('./routes/substituicoes'));      // Nadia
