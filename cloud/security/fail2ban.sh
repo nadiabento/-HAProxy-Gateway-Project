@@ -17,6 +17,7 @@ maxretry = 5            # 5 falhas seguidas = bloqueio
 
 [sshd]
 enabled = true
+backend = systemd       # lê os logs do SSH no journal do sistema
 EOF
 
 systemctl enable fail2ban

@@ -23,10 +23,11 @@ apt-get install -y keepalived curl jq
 echo "net.ipv4.ip_nonlocal_bind=1" > /etc/sysctl.d/99-ha.conf
 sysctl --system
 
-# Copia o script de verificação e a configuração desta VM (vm1 ou vm2)
-install -m 755 /vagrant/keepalived/check_haproxy.sh /etc/keepalived/check_haproxy.sh
-install -m 644 /vagrant/keepalived/keepalived.conf.$(hostname) /etc/keepalived/keepalived.conf
-
-# Arranca o Keepalived e deixa-o ligar no boot
-systemctl enable keepalived
-systemctl restart keepalived
+# Só as VMs com configuração do Keepalived (vm1 e vm2) o configuram e arrancam
+if [ -f "/vagrant/keepalived/keepalived.conf.$(hostname)" ]; then
+  if [ -f "/vagrant/keepalived/check_haproxy.sh" ]; then
+    install -m 755 /vagrant/keepalived/check_haproxy.sh /etc/keepalived/check_haproxy.sh
+  fi
+  install -m 644 "/vagrant/keepalived/keepalived.conf.$(hostname)" /etc/keepalived/keepalived.conf
+  systemctl enable --now keepalived
+fi
