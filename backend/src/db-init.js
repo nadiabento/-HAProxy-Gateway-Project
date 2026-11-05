@@ -1,7 +1,7 @@
 // Corre só na vm1 (RUN_MIGRATIONS=true), antes de a API arrancar.
 // sequelize.sync() cria o que falta e nunca apaga nem altera tabelas existentes.
 const { sequelize } = require("./models");
-const { semear } = require("../seeders/seed");
+//const { semear } = require("../seeders/seed");
 
 async function esperarPelaBD(tentativas = 30, esperaMs = 2000) {
   for (let i = 1; i <= tentativas; i++) {
@@ -22,7 +22,7 @@ async function main() {
   await esperarPelaBD();
   await sequelize.sync();
   console.log("[db-init] tabelas criadas ou já existentes");
-  await semear();
+ // await semear();
   await sequelize.close();
 }
 

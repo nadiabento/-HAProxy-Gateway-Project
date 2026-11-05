@@ -1,18 +1,35 @@
 import { useState } from 'react';
+import axios from 'axios';
 import logo from '../assets/logo-prc.jpg'; 
 
 export default function LoginView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault(); 
-    console.log('Tentativa de login com:', email, password);
-    alert(`Login simulado para o e-mail: ${email}`);
+    
+    try {
+      // Ajusta a porta (ex: 3000) e o caminho conforme o teu backend
+      const response = await axios.post('http://localhost:3000/api/auth/login', {
+        email: email,
+        password: password
+      });
+
+      console.log('Login efetuado com sucesso:', response.data);
+      alert('Login efetuado com sucesso!');
+
+      // Futuramente: guardar token e redirecionar
+      // localStorage.setItem('token', response.data.token);
+      // window.location.href = '/pacientes';
+      
+    } catch (error) {
+      console.error('Erro ao iniciar sessão:', error);
+      alert(error.response?.data?.message || 'Erro ao tentar iniciar sessão. Verifique as credenciais.');
+    }
   };
 
   return (
-    // Fundo da página a ocupar todo o ecrã
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center', 
@@ -22,7 +39,6 @@ export default function LoginView() {
       fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' 
     }}>
       
-      {/* Cartão branco com sombra para o formulário */}
       <div style={{ 
         backgroundColor: 'white', 
         padding: '40px', 
@@ -36,11 +52,7 @@ export default function LoginView() {
         <img 
           src={logo} 
           alt="Logótipo PRC" 
-          style={{ 
-            width: '280px', 
-            marginBottom: '20px', 
-            borderRadius: '8px'
-          }} 
+          style={{ width: '280px', marginBottom: '20px', borderRadius: '8px' }} 
         />
         
         <h2 style={{ margin: '0 0 10px 0', color: '#333' }}>Bem-vindo</h2>
@@ -48,7 +60,6 @@ export default function LoginView() {
         
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* Etiquetas alinhadas à esquerda */}
           <div style={{ textAlign: 'left' }}>
             <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444', fontSize: '14px' }}>E-mail</label>
             <input 
