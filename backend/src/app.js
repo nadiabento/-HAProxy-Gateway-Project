@@ -1,14 +1,17 @@
-// Nadia: app Express. Os routers ligam-se aqui, um por linha.
 const express = require("express");
+const cors = require("cors");
 const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 app.disable("x-powered-by");
+app.use(cors());
 app.use(express.json());
 
 // ---- rotas (cada dono acrescenta a sua linha quando o ficheiro existir) ----
 app.use("/api", require("./routes/health")); // Jessica (versão provisória da Nadia)
 app.use("/api/auth", require("./routes/auth")); // Nadia
+app.use("/api/utilizadores", require("./routes/utilizadores"));
+app.use('/api/pacientes', require('./routes/pacientes'));
 // app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Nadia
 // app.use('/api/ausencias', require('./routes/ausencias'));              // Nadia
 // app.use('/api/substituicoes', require('./routes/substituicoes'));      // Nadia

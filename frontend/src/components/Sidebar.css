@@ -1,0 +1,39 @@
+/* Estilo base para todos os links do menu */
+.menu-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 8px 0;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+/* Estado normal (inativo) */
+.menu-link.inativo {
+  color: #64748b;
+  background-color: transparent;
+}
+
+/* Efeito Hover (passar o rato) nos inativos */
+.menu-link.inativo:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+/* Estado Ativo (página atual) */
+.menu-link.ativo {
+  color: #0284c7;
+  background-color: #f0f9ff;
+  font-weight: 600;
+}
+
+/* Efeito especial para o botão de Terminar Sessão */
+.menu-logout {
+  color: #e11d48;
+  background-color: transparent;
+}
+.menu-logout:hover {
+  background-color: #ffe4e6;
+}

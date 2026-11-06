@@ -1,31 +1,31 @@
 import { useState } from 'react';
 import axios from 'axios';
-import logo from '../assets/logo-prc.jpg'; 
+import { useNavigate } from 'react-router-dom'; // <-- 1. Importar o hook de navegação
+import logo from '../assets/logo-prc.jpg';
 
 export default function LoginView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate(); // <-- 2. Inicializar o navigate
 
   const handleLogin = async (e) => {
-    e.preventDefault(); 
-    
+    e.preventDefault();
     try {
-      // Ajusta a porta (ex: 3000) e o caminho conforme o teu backend
+      // Faz o pedido ao backend
       const response = await axios.post('http://localhost:3000/api/auth/login', {
         email: email,
         password: password
       });
 
-      console.log('Login efetuado com sucesso:', response.data);
-      alert('Login efetuado com sucesso!');
-
-      // Futuramente: guardar token e redirecionar
-      // localStorage.setItem('token', response.data.token);
-      // window.location.href = '/pacientes';
+      // 3. Guarda o token de segurança no navegador
+      localStorage.setItem('token', response.data.token);
       
+      // 4. Redireciona para o dashboard!
+      navigate('/dashboard');
+
     } catch (error) {
       console.error('Erro ao iniciar sessão:', error);
-      alert(error.response?.data?.message || 'Erro ao tentar iniciar sessão. Verifique as credenciais.');
+      alert(error.response?.data?.message || 'Erro ao tentar iniciar sessão. Verifica as credenciais.');
     }
   };
 
