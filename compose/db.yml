@@ -14,7 +14,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     ports:
-          - "${DB_BIND_IP:-0.0.0.0}:3306:3306"
+      - "3307:3306"
     networks:
       - clinica_net
     healthcheck:
