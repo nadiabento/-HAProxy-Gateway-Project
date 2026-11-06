@@ -1,5 +1,6 @@
 // Corre só na vm1 (RUN_MIGRATIONS=true), antes de a API arrancar.
 // sequelize.sync() cria o que falta e nunca apaga nem altera tabelas existentes.
+require('dotenv').config({ path: '../.env' });
 const { sequelize } = require("./models");
 //const { semear } = require("../seeders/seed");
 

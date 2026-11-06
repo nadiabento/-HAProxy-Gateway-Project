@@ -1,4 +1,5 @@
 // Nadia: arranque do servidor. Espera pela base de dados e fecha com cuidado.
+require('dotenv').config({ path: '../.env' });
 const app = require("./app");
 const sequelize = require("./config/database");
 
