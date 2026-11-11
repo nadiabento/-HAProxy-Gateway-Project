@@ -2,9 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "src/server.js",
-  "scripts": {
+   "scripts": {
     "start": "node src/server.js",
-    "db:init": "node src/db-init.js"
+    "dev": "node --env-file=../.env.dev --watch src/server.js",
+    "db:init": "node src/db-init.js",
+    "db:init:dev": "node --env-file=../.env.dev src/db-init.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -15,3 +17,4 @@
     "sequelize": "^6.37.0"
   }
 }
+
