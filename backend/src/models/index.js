@@ -1,5 +1,5 @@
-// As tabelas de ligação perfil_utilizador e fisioterapeuta_paciente não têm
-// ficheiro: o belongsToMany cria-as sozinho no sequelize.sync().
+// A tabela de ligação perfil_utilizador não tem ficheiro: o belongsToMany
+// cria-a sozinho no sequelize.sync().
 const sequelize = require("../config/sequelize");
 
 const Utilizador = require("./Utilizador")(sequelize);
@@ -55,22 +55,6 @@ Perfil.belongsToMany(Utilizador, {
   foreignKey: "perfilId",
   otherKey: "utilizadorId",
   as: "utilizadores",
-  timestamps: false,
-});
-
-// N:M fisioterapeuta <-> paciente (tabela fisioterapeuta_paciente, automática)
-Fisioterapeuta.belongsToMany(Paciente, {
-  through: "fisioterapeuta_paciente",
-  foreignKey: "fisioterapeutaId",
-  otherKey: "pacienteId",
-  as: "pacientes",
-  timestamps: false,
-});
-Paciente.belongsToMany(Fisioterapeuta, {
-  through: "fisioterapeuta_paciente",
-  foreignKey: "pacienteId",
-  otherKey: "fisioterapeutaId",
-  as: "fisioterapeutas",
   timestamps: false,
 });
 

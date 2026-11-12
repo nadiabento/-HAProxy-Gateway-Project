@@ -1,99 +1,48 @@
-"use strict";
+// Dados iniciais. Pode correr várias vezes: só cria o que falta.
 const bcrypt = require("bcrypt");
-const { QueryTypes } = require("sequelize");
+const {
+  sequelize, Perfil, Utilizador, DadosPessoais,
+  Paciente, Fisioterapeuta, Rececionista, Administrador, Tecnica,
+} = require("../src/models");
 
-module.exports = {
-  up: async (queryInterface, SequelizeInstance) => {
-    // 1. Verificar se o Administrador já existe pelo email
-    const existingAdmin = await queryInterface.sequelize.query(
-      `SELECT id FROM dados_pessoais WHERE email = 'admin@prc.pt' LIMIT 1;`,
-      { type: QueryTypes.SELECT },
-    );
+const PERFIS = ["administrador", "rececionista", "fisioterapeuta", "paciente"];
 
-    if (existingAdmin && existingAdmin.length > 0) {
-      console.log("O Administrador já se encontra registado na base de dados.");
-      return;
-    }
+async function criarPessoa({ nome, email, password, perfil, Modelo, extra = {} }) {
+  const existente = await DadosPessoais.findOne({ where: { email } });
+  if (existente) return existente;
 
-    // 2. Garantir que o Perfil 'Administrador' existe
-    let perfilRows = await queryInterface.sequelize.query(
-      `SELECT id FROM perfil WHERE tipo_perfil = 'Administrador' LIMIT 1;`,
-      { type: QueryTypes.SELECT },
-    );
+  const u = await Utilizador.create({
+    passwordHash: await bcrypt.hash(password, 10),
+    estado: "ativo",
+  });
+  const dp = await DadosPessoais.create({ utilizadorId: u.id, nome, email });
+  await sequelize.query(
+    "INSERT IGNORE INTO perfil_utilizador (utilizador_id, perfil_id) SELECT ?, id FROM perfil WHERE tipo_perfil = ?",
+    { replacements: [u.id, perfil] },
+  );
+  await Modelo.create({ dadosPessoaisId: dp.id, ...extra });
+  return dp;
+}
 
-    let adminPerfilId;
-    if (perfilRows && perfilRows.length > 0) {
-      adminPerfilId = perfilRows[0].id;
-    } else {
-      await queryInterface.bulkInsert(
-        "perfil",
-        [{ tipo_perfil: "Administrador" }],
-        {},
-      );
-      const newPerfilRows = await queryInterface.sequelize.query(
-        `SELECT id FROM perfil WHERE tipo_perfil = 'Administrador' LIMIT 1;`,
-        { type: QueryTypes.SELECT },
-      );
-      adminPerfilId = newPerfilRows[0].id;
-    }
+async function semear() {
+  for (const tipoPerfil of PERFIS) {
+    await Perfil.findOrCreate({ where: { tipoPerfil } });
+  }
 
-    // 3. Criar a conta na tabela utilizador
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash("admin123", salt);
+  await criarPessoa({ nome: "Admin Principal", email: "admin@prc.pt", password: "admin123", perfil: "administrador", Modelo: Administrador });
+  await criarPessoa({ nome: "Rita Receção", email: "rececao@prc.pt", password: "rececao123", perfil: "rececionista", Modelo: Rececionista });
+  await criarPessoa({ nome: "Filipe Fisio", email: "fisio@prc.pt", password: "fisio123", perfil: "fisioterapeuta", Modelo: Fisioterapeuta, extra: { especialidade: "Ortopedia" } });
+  await criarPessoa({ nome: "Paula Paciente", email: "paciente@prc.pt", password: "paciente123", perfil: "paciente", Modelo: Paciente });
 
-    await queryInterface.bulkInsert(
-      "utilizador",
-      [
-        {
-          password_hash: passwordHash,
-          estado: "ativo",
-        },
-      ],
-      {},
-    );
+  for (const [nome, categoria] of [
+    ["Ultrassons", "Eletroterapia"],
+    ["TENS", "Eletroterapia"],
+    ["Mobilização articular", "Terapia manual"],
+    ["Cinesiterapia", "Exercício"],
+  ]) {
+    await Tecnica.findOrCreate({ where: { nome }, defaults: { categoria } });
+  }
+  console.log("[seed] dados iniciais prontos");
+}
 
-    // Obter o ID do utilizador recém-criado
-    const userRows = await queryInterface.sequelize.query(
-      `SELECT id FROM utilizador ORDER BY id DESC LIMIT 1;`,
-      { type: QueryTypes.SELECT },
-    );
-    const utilizadorId = userRows[0].id;
-
-    // 4. Criar os dados_pessoais do Administrador
-    await queryInterface.bulkInsert(
-      "dados_pessoais",
-      [
-        {
-          utilizador_id: utilizadorId,
-          nome: "Admin Principal",
-          email: "admin@prc.pt",
-          contacto: "910000000",
-          data_nascimento: "1980-01-01",
-          morada: "Sede da Clínica PRC",
-        },
-      ],
-      {},
-    );
-
-    // 5. Ligar o Utilizador ao Perfil na tabela perfil_utilizador
-    await queryInterface.bulkInsert(
-      "perfil_utilizador",
-      [
-        {
-          utilizador_id: utilizadorId,
-          perfil_id: adminPerfilId,
-        },
-      ],
-      {},
-    );
-
-    console.log("Administrador principal criado com sucesso!");
-  },
-
-  down: async (queryInterface, SequelizeInstance) => {
-    await queryInterface.bulkDelete("perfil_utilizador", null, {});
-    await queryInterface.bulkDelete("dados_pessoais", null, {});
-    await queryInterface.bulkDelete("utilizador", null, {});
-    await queryInterface.bulkDelete("perfil", null, {});
-  },
-};
+module.exports = { semear };

@@ -1,18 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const pacientesController = require('../controllers/pacientesController');
-const { authenticate, authorize } = require('../middleware/authMiddleware');
+const router = require("express").Router();
+const { verificarToken, autorizarPerfis } = require("../middlewares/auth");
+const validate = require("../middlewares/validate");
+const c = require("../controllers/pacienteController");
 
-// GET (Listar): Rececionistas e Fisioterapeutas podem ver
-router.get('/', authenticate, authorize('rececionista', 'fisioterapeuta'), pacientesController.listarPacientes);
+const staff = autorizarPerfis("administrador", "rececionista", "fisioterapeuta");
+const recepcao = autorizarPerfis("administrador", "rececionista");
 
-// POST (Criar): SÓ Rececionistas (e Admin) podem criar
-router.post('/', authenticate, authorize('rececionista'), pacientesController.criarPaciente);
-
-// PUT (Editar): Rececionistas e Fisioterapeutas podem editar
-router.put('/:id', authenticate, authorize('rececionista', 'fisioterapeuta'), pacientesController.editarPaciente);
-
-// DELETE (Eliminar): SÓ Rececionistas (e Admin) podem apagar
-router.delete('/:id', authenticate, authorize('rececionista'), pacientesController.eliminarPaciente);
+router.use(verificarToken);
+router.get("/", staff, c.listar);
+router.get("/:id", c.obter); // o paciente só vê o seu (verificado no controller)
+router.post("/", recepcao,
+  validate({ nome: { required: true, type: "string" }, email: { required: true, type: "string" } }),
+  c.criar);
+router.put("/:id", recepcao, c.atualizar);
+router.delete("/:id", autorizarPerfis("administrador"), c.apagar);
 
 module.exports = router;
