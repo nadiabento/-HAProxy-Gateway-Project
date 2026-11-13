@@ -1,6 +1,8 @@
 # Modelo de dados
 
-Base de dados **MariaDB 11.8** (`clinica`), acedida pelo Sequelize. São **11 tabelas**: 10 entidades do diagrama, mais a tabela de ligação `perfil_utilizador`. O diagrama original está em ![Diagrama do modelo de dados](modelo-dados.png).
+Base de dados **MariaDB 11.8** (`clinica`), acedida pelo Sequelize. São **11 tabelas**: 10 entidades do diagrama, mais a tabela de ligação `perfil_utilizador`. O primário fica na vm3 e a réplica assíncrona na vm2.
+
+![Diagrama do modelo de dados](modelo-dados.png)
 
 As tabelas são criadas por `sequelize.sync()` no arranque da vm1 (`RUN_MIGRATIONS=true`, ficheiro `backend/src/db-init.js`), que só cria o que falta e nunca apaga nem altera tabelas existentes. Os dados iniciais vêm de `backend/seeders/seed.js`.
 
