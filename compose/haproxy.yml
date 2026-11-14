@@ -1,9 +1,22 @@
+# 2 HAProxy por VM, com a mesma configuração.
+# haproxy1 na porta 80 (a do VIP) e haproxy2 na 81.
 services:
-  haproxy:
+  haproxy1:
     image: haproxy:alpine
-    container_name: haproxy
+    container_name: haproxy1
+    restart: unless-stopped
     ports:
       - "80:80"
       - "8404:8404"
+    volumes:
+      - ../haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+
+  haproxy2:
+    image: haproxy:alpine
+    container_name: haproxy2
+    restart: unless-stopped
+    ports:
+      - "81:80"
+      - "8405:8404"
     volumes:
       - ../haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
