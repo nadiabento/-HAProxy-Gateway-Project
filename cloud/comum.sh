@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Funções partilhadas pelo deploy.sh e pelas demos da nuvem (António).
+# Funções partilhadas pelo deploy.sh e pelas demos da nuvem.
 # Não se corre sozinho: os outros scripts fazem ". cloud/comum.sh".
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -10,8 +10,8 @@ if [ ! -f "$CONF" ]; then
   echo "      cp cloud/.env.cloud.example cloud/.env.cloud   e preenche os valores" >&2
   exit 1
 fi
-# o sed tira os fins de linha do Windows (\r)
-set -a; . <(sed 's/\r$//' "$CONF"); set +a
+# o tr tira os fins de linha do Windows (\r)
+set -a; eval "$(tr -d '\r' < "$CONF")"; set +a
 
 : "${SERVIDOR1:?Preenche SERVIDOR1 em cloud/.env.cloud}"
 : "${SSH_USER:?Preenche SSH_USER em cloud/.env.cloud}"
