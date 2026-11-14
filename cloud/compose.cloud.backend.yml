@@ -1,0 +1,19 @@
+# Backend e frontend no servidor da universidade (António). Junta-se ao compose/backend.yml e compose/frontend.yml.
+services:
+  backend:
+    restart: always
+    environment:
+      NODE_ENV: production
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+    logging: &logs
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    restart: always
+    # só visível onde é preciso (127.0.0.1 ou o IP interno do servidor 2)
+    ports: !override
+      - "${FRONTEND_BIND:-127.0.0.1}:8080:80"
+    logging: *logs

@@ -1,0 +1,22 @@
+# HAProxy no servidor da universidade. Junta-se ao compose/haproxy.yml.
+services:
+  haproxy:
+    restart: always
+    environment:
+      APP1_ADDR: ${APP1_ADDR:-frontend:80}
+      APP2_ADDR: ${APP2_ADDR:-}
+      STATS_USER: ${STATS_USER:-admin}
+      STATS_PASSWORD: ${STATS_PASSWORD:?falta STATS_PASSWORD}
+    volumes:
+      - ../cloud/haproxy.cloud.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - clinica_net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  clinica_net:
+    name: clinica_net

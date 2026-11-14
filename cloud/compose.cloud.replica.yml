@@ -1,0 +1,46 @@
+# Só com UMA máquina : 2.ª cópia da aplicação, para o HAProxy ter dois servidores.
+# O frontend2 fala com o backend2 numa rede própria, onde o backend2 se chama "backend".
+services:
+  backend2:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: clinica-backend:latest
+    container_name: clinica-backend-2
+    restart: always
+    environment:
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      VM_NAME: ${VM_NAME:-servidor1}-b
+      API_PORT: 3000
+      NODE_ENV: production
+      RUN_MIGRATIONS: "false"
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      SESSION_SECRET: ${SESSION_SECRET}
+    networks:
+      clinica_net: {}
+      app2_net:
+        aliases: [backend]
+
+  frontend2:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    image: clinica-frontend:latest
+    container_name: clinica-frontend-2
+    restart: always
+    networks:
+      - app2_net
+
+  haproxy:
+    networks:
+      - clinica_net
+      - app2_net
+
+networks:
+  app2_net:
+    name: clinica_app2_net
