@@ -1,0 +1,44 @@
+# Demos
+
+Correr no Git Bash, na raiz do projeto, com tudo a correr (`start.sh` no PC ou `cloud/deploy.sh` no servidor).
+Durante as demos pode-se ver o estado dos servidores em `http://<portal>:8404/stats`.
+
+## D1 - Failover do VIP
+
+```bash
+bash scripts/demo-d1-failover.sh
+```
+
+Faz pedidos ao VIP, desliga a VM1 e mede quanto tempo o VIP esteve em baixo.
+Resultado obtido: **0,32 s** (limite: 2 s). Para repor: `vagrant up vm1`.
+
+## D2 - Balanceamento de carga
+
+```bash
+bash scripts/demo-d2-load.sh            # PC
+bash cloud/scripts/demo-d2-cloud.sh     # servidor
+```
+
+Faz vários pedidos e conta que servidor respondeu a cada um. Os pedidos têm de ficar repartidos pelos dois.
+Resultado obtido: ---a preencher----_
+
+## D3 - Servidor web em baixo
+
+```bash
+bash scripts/demo-d3-web-down.sh        # PC
+bash cloud/scripts/demo-d3-cloud.sh     # servidor
+```
+
+Desliga o frontend de um servidor durante uns segundos, com pedidos a correr.
+O HAProxy passa tudo para o outro servidor e o portal continua a responder.
+Resultado obtido: ----a preencher----
+
+## D4 - Persistência da BD
+
+```bash
+bash scripts/demo-d4-persist.sh         # PC
+bash cloud/scripts/demo-d4-cloud.sh     # servidor
+```
+
+Insere um registo, reinicia a MariaDB (no servidor, apaga e recria o contentor) e verifica que o registo continua lá.
+Resultado obtido: ----a preencher-----_

@@ -12,6 +12,8 @@ Se uma VM falhar, a outra assume o VIP e o portal continua a responder.
 | VIP (`192.168.56.10`) | IP partilhado que os clientes usam                    |
 | Keepalived            | Gere o VIP entre as duas VMs (protocolo VRRP)         |
 | HAProxy               | Balanceador de carga (contentor `haproxy`)            |
+| VM3 (`192.168.56.13`) | Base de dados MariaDB                                 |
+| Frontend + backend    | NGINX com React e API Node.js, em cada VM web         |
 
 ## Requisitos
 
@@ -54,6 +56,15 @@ Para repor a VM1 depois da demo:
 vagrant up vm1
 ```
 
+## Servidor da universidade
+
+```bash
+cp cloud/.env.cloud.example cloud/.env.cloud
+bash cloud/deploy.sh
+```
+
+Ver `docs/nuvem.md` e `docs/icn/demos.md`.
+
 ## Estrutura
 
 ```
@@ -61,4 +72,5 @@ Vagrantfile                    # define as duas VMs
 provision/base.sh              # instala Docker e Keepalived em cada VM
 keepalived/                    # configuração do VIP e verificação do HAProxy
 scripts/demo-d1-failover.sh    # demo de failover
+cloud/                         # deploy no servidor da universidade
 ```
