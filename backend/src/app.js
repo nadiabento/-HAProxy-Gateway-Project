@@ -50,7 +50,7 @@ app.get("/metrics", async (req, res) => {
 app.use("/api", require("./routes/health")); // Jessica (versão provisória da Nadia)
 app.use("/api/auth", require("./routes/auth")); // Nadia
 app.use("/api/utilizadores", require("./routes/utilizadores"));
-// app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Nadia
+app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Jéssica
 app.use("/api/pacientes", require("./routes/pacientes")); // Jessica
 app.use("/api/consultas", require("./routes/consultas")); // Jessica
 app.use("/api/tecnicas", require("./routes/tecnicas")); // Jessica
