@@ -50,17 +50,11 @@ app.get("/metrics", async (req, res) => {
 app.use("/api", require("./routes/health")); // Jessica (versão provisória da Nadia)
 app.use("/api/auth", require("./routes/auth")); // Nadia
 app.use("/api/utilizadores", require("./routes/utilizadores"));
-app.use('/api/pacientes', require('./routes/pacientes'));
-// app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Nadia
-// app.use('/api/ausencias', require('./routes/ausencias'));              // Nadia
-// app.use('/api/substituicoes', require('./routes/substituicoes'));      // Nadia
-app.use('/api/pacientes', require('./routes/pacientes'));              // Jessica
-// app.use('/api/tratamentos', require('./routes/tratamentos'));          // Jessica
-// app.use('/api/relatorios', require('./routes/relatorios'));            // Jessica
-// app.use('/api/planos', require('./routes/planos'));                    // Jessica
-// app.use('/api/exercicios', require('./routes/exercicios'));            // Jessica
-app.use("/api/consultas", require("./routes/consultas"));   // Jessica
-app.use("/api/tecnicas", require("./routes/tecnicas"));     // Jessica
+app.use('/api/fisioterapeutas', require('./routes/fisioterapeutas'));  // Jéssica
+app.use("/api/pacientes", require("./routes/pacientes")); // Jessica
+app.use("/api/consultas", require("./routes/consultas")); // Jessica
+app.use("/api/tecnicas", require("./routes/tecnicas")); // Jessica
+
 // qualquer /api desconhecido dá 404 em JSON
 app.use("/api", (req, res) =>
   res.status(404).json({ erro: "Rota não encontrada" }),
