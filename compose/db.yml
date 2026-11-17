@@ -6,6 +6,8 @@ services:
     container_name: clinica-db
     image: clinica-db:latest
     restart: unless-stopped
+    mem_limit: 512m # (RNF-07)
+    cpus: 1.0 # (RNF-07)
     environment:
       MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USER}

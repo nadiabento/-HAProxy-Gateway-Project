@@ -8,6 +8,8 @@ services:
     container_name: clinica-backend
     image: clinica-backend:latest
     restart: unless-stopped
+    mem_limit: 256m # (RNF-07)
+    cpus: 1.0 # (RNF-07)
     environment:
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-3306}
@@ -19,6 +21,7 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       RUN_MIGRATIONS: ${RUN_MIGRATIONS:-false}
       JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h} 
       SESSION_SECRET: ${SESSION_SECRET}
     ports:
       - "127.0.0.1:3000:3000" # só para testar a partir da própria máquina
