@@ -11,12 +11,20 @@ export default function PacientesView() {
   const [formData, setFormData] = useState({ nome: '', email: '', contacto: '', data_nascimento: '', morada: '' });
   const [editData, setEditData] = useState({ id: null, nome: '', email: '', contacto: '', data_nascimento: '', morada: '' });
 
-  useEffect(() => {
+ useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.email === 'admin@prc.pt' || (payload.cargo && payload.cargo.toLowerCase() === 'rececionista')) {
+        const perfis = (payload.perfis || []).map((p) => p.toLowerCase());
+        const cargo = payload.cargo ? payload.cargo.toLowerCase() : '';
+
+        if (
+          payload.email === 'admin@prc.pt' ||
+          perfis.includes('administrador') ||
+          perfis.includes('rececionista') ||
+          cargo === 'rececionista'
+        ) {
           setPermissoes({ podeAdicionarApagar: true });
         }
       } catch (error) {}

@@ -4,6 +4,7 @@ import DashboardView from './views/DashboardView';
 import Sidebar from './components/Sidebar';
 import FuncionariosView from './views/FuncionariosView';
 import PacientesView from './views/PacientesView';
+import ConsultasView from './views/ConsultasView';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/pacientes" element={<PacientesView />} />
           <Route path="/funcionarios" element={<FuncionariosView />} /> 
+          <Route path="/consultas" element={<ConsultasView />} />
           <Route path="/perfil" element={<div>Página de Perfil (em breve)</div>} />
           
         </Route>
