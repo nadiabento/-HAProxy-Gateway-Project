@@ -62,14 +62,17 @@ exports.listarFuncionarios = async (req, res) => {
       ]
     });
 
-    const lista = utilizadores.map(u => ({
-      id: u.id,
-      estado: u.estado,
-      nome: u.dadosPessoais ? u.dadosPessoais.nome : 'Sem nome',
-      email: u.dadosPessoais ? u.dadosPessoais.email : 'Sem e-mail',
-      contacto: u.dadosPessoais ? u.dadosPessoais.contacto : '',
-      tipo: (u.perfis && u.perfis.length > 0) ? u.perfis[0].tipoPerfil : 'Sem Perfil'
-    }));
+    const lista = utilizadores
+      .map(u => ({
+        id: u.id,
+        estado: u.estado,
+        nome: u.dadosPessoais ? u.dadosPessoais.nome : 'Sem nome',
+        email: u.dadosPessoais ? u.dadosPessoais.email : 'Sem e-mail',
+        contacto: u.dadosPessoais ? u.dadosPessoais.contacto : '',
+        morada: u.dadosPessoais ? u.dadosPessoais.morada : '',
+        tipo: (u.perfis && u.perfis.length > 0) ? u.perfis[0].tipoPerfil : 'Sem Perfil'
+      }))
+      .filter(u => u.tipo.toLowerCase() !== 'paciente');
 
     res.status(200).json(lista);
   } catch (error) {
