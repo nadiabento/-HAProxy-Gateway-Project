@@ -164,7 +164,7 @@ Todas as rotas exigem token.
   "evolucaoClinica": null,
   "observacoes": null,
   "paciente": { "id": 1, "dadosPessoaisId": 4, "dadosPessoais": { "nome": "Paula Paciente", "email": "paciente@prc.pt" } },
-  "fisioterapeuta": { "id": 1, "dadosPessoaisId": 3, "especialidade": "Ortopedia", "dadosPessoais": { "nome": "Filipe Fisio", "email": "fisio@prc.pt" } },
+  "fisioterapeuta": { "id": 1, "dadosPessoaisId": 3, "especialidade": "Musculoesquelética", "dadosPessoais": { "nome": "Filipe Fisio", "email": "fisio@prc.pt" } },
   "tecnicas": [
     { "id": 1, "nome": "Ultrassons", "categoria": "Eletroterapia", "ativa": true,
       "ConsultaTecnica": { "consultaId": 1, "tecnicaId": 1, "tempoMinutos": 15, "parametros": "1 MHz" } }
