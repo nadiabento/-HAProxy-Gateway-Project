@@ -31,7 +31,7 @@ async function semear() {
 
   await criarPessoa({ nome: "Admin Principal", email: "admin@prc.pt", password: "admin123", perfil: "administrador", Modelo: Administrador });
   await criarPessoa({ nome: "Rita Receção", email: "rececao@prc.pt", password: "rececao123", perfil: "rececionista", Modelo: Rececionista });
-  await criarPessoa({ nome: "Filipe Fisio", email: "fisio@prc.pt", password: "fisio123", perfil: "fisioterapeuta", Modelo: Fisioterapeuta, extra: { especialidade: "Ortopedia" } });
+  await criarPessoa({ nome: "Filipe Fisio", email: "fisio@prc.pt", password: "fisio123", perfil: "fisioterapeuta", Modelo: Fisioterapeuta, extra: { especialidade: "musculoesquelética" } });
   await criarPessoa({ nome: "Paula Paciente", email: "paciente@prc.pt", password: "paciente123", perfil: "paciente", Modelo: Paciente });
 
   for (const [nome, categoria] of [
