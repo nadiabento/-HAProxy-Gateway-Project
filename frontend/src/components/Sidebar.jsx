@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Settings, LogOut, Briefcase } from 'lucide-react';
 import logo from '../assets/logo-prc.jpg';
 import './Sidebar.css';
 
@@ -61,7 +61,10 @@ export default function Sidebar() {
           </Link>
           <Link to="/pacientes" className={getLinkClass('/pacientes')}>
             <Users size={20} style={{ marginRight: '12px' }} /> Pacientes
-          </Link>    
+          </Link> 
+          <Link to="/consultas" className={getLinkClass('/consultas')}>
+            <Calendar size={20} style={{ marginRight: '12px' }} /> Consultas
+          </Link>   
           
           {/* 2. ADICIONADO: Condição que oculta o link se não for admin */}
           {isAdmin && (
