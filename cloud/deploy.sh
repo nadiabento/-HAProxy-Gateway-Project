@@ -150,7 +150,7 @@ subir() {
   fi
   compose_remoto "$SERVIDOR1" up -d --build --remove-orphans
   # o haproxy.cfg é montado como ficheiro: reiniciar para ler a versão nova
-  compose_remoto "$SERVIDOR1" restart haproxy >/dev/null
+  compose_remoto "$SERVIDOR1" restart haproxy1 haproxy2 >/dev/null
 
   titulo "4/4 Verificar"
   esperar_portal

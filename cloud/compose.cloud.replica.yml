@@ -33,14 +33,21 @@ services:
     image: clinica-frontend:latest
     container_name: clinica-frontend-2
     restart: always
+    mem_limit: 256m # igual ao backend (RNF-07)
+    cpus: 1.0
     networks:
       - app2_net
 
-  haproxy:
+  haproxy1:
     networks:
       - clinica_net
       - app2_net
 
+  haproxy2:
+    networks:
+      - clinica_net
+      - app2_net
+      
 networks:
   app2_net:
     name: clinica_app2_net
