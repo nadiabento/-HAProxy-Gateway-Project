@@ -30,18 +30,28 @@ export default function DashboardView() {
     carregarTotais();
   }, []);
 
+  const cartao = {
+    padding: 'var(--space-6)',
+    flex: 1,
+  };
+
   return (
     <div>
-      <p style={{ color: '#7f8c8d' }}>Bem-vindo ao painel de controlo do Portal de Reabilitação Clínica.</p>
-
-      <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
-        <div style={{ padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', flex: 1 }}>
-          <h3>Total de Pacientes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#3498db' }}>{totais.pacientes}</p>
+      <div className="page-header">
+        <div>
+          <h2 className="page-title">Dashboard</h2>
+          <p className="page-subtitle">Bem-vindo ao painel de controlo do Portal de Reabilitação Clínica.</p>
         </div>
-        <div style={{ padding: '20px', background: 'white', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', flex: 1 }}>
-          <h3>Total de Funcionários</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#2ecc71' }}>{totais.funcionarios}</p>
+      </div>
+
+      <div style={{ display: 'flex', gap: 'var(--space-5)' }}>
+        <div className="card" style={cartao}>
+          <h3 className="field-label" style={{ color: 'var(--color-text-muted)' }}>Total de Pacientes</h3>
+          <p style={{ fontSize: '32px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-primary)', marginTop: 'var(--space-2)' }}>{totais.pacientes}</p>
+        </div>
+        <div className="card" style={cartao}>
+          <h3 className="field-label" style={{ color: 'var(--color-text-muted)' }}>Total de Funcionários</h3>
+          <p style={{ fontSize: '32px', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-success)', marginTop: 'var(--space-2)' }}>{totais.funcionarios}</p>
         </div>
       </div>
     </div>
