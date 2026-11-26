@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Eye, Trash2 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import MarcarConsultaModal from '../components/MarcarConsultaModal';
 import axios from 'axios';
 
 export default function ConsultasView() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [consultas, setConsultas] = useState([]);
-  const [pacientes, setPacientes] = useState([]);
-  const [fisioterapeutas, setFisioterapeutas] = useState([]);
 
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [consultaSelecionada, setConsultaSelecionada] = useState(null);
@@ -14,16 +16,11 @@ export default function ConsultasView() {
 
   const [permissoes, setPermissoes] = useState({
     eRececionista: false,
+    podeMarcar: false,
     eStaff: false,
     eAdmin: false,
   });
 
-  const [formData, setFormData] = useState({
-    pacienteId: '',
-    fisioterapeutaId: '',
-    dataHora: '',
-    duracaoMinutos: 45,
-  });
 
   const [editClinico, setEditClinico] = useState({
     estado: 'agendada',
@@ -52,15 +49,28 @@ export default function ConsultasView() {
           perfis.includes('fisioterapeuta') ||
           cargo === 'fisioterapeuta';
 
-        setPermissoes({ eRececionista: rececionista, eStaff: staff, eAdmin: admin });
+        setPermissoes({
+          eRececionista: rececionista,
+          // Quem pode marcar consultas: rececionista e administrador (o admin pode fazer tudo)
+          podeMarcar: rececionista || admin,
+          eStaff: staff,
+          eAdmin: admin,
+        });
       } catch (error) {}
     }
 
     carregarConsultas();
-    if (rececionista || staff) {
-      carregarListasAuxiliares();
-    }
   }, []);
+
+  // Vindo do Dashboard: abrir os detalhes da consulta em que se clicou
+  useEffect(() => {
+    const id = location.state?.abrirConsultaId;
+    if (!id || consultas.length === 0) return;
+    const c = consultas.find((x) => x.id === id);
+    if (c) abrirDetalhes(c);
+    navigate(location.pathname, { replace: true, state: null }); // não voltar a abrir ao atualizar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state, consultas]);
 
   const getHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -74,41 +84,6 @@ export default function ConsultasView() {
       setConsultas(res.data);
     } catch (error) {
       console.error('Erro ao carregar consultas:', error);
-    }
-  };
-
-  const carregarListasAuxiliares = async () => {
-    try {
-      const [resPac, resFisio] = await Promise.all([
-        axios.get('http://localhost:3000/api/pacientes', { headers: getHeaders() }),
-        axios.get('http://localhost:3000/api/fisioterapeutas', { headers: getHeaders() }),
-      ]);
-      setPacientes(resPac.data || []);
-      setFisioterapeutas(resFisio.data || []);
-    } catch (error) {
-      console.error('Erro ao carregar pacientes/fisioterapeutas:', error);
-    }
-  };
-
-  const handleCriarConsulta = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(
-        'http://localhost:3000/api/consultas',
-        {
-          pacienteId: Number(formData.pacienteId),
-          fisioterapeutaId: Number(formData.fisioterapeutaId),
-          dataHora: new Date(formData.dataHora).toISOString(),
-          duracaoMinutos: Number(formData.duracaoMinutos) || 45,
-          estado: 'agendada',
-        },
-        { headers: getHeaders() }
-      );
-      setFormData({ pacienteId: '', fisioterapeutaId: '', dataHora: '', duracaoMinutos: 45 });
-      setModalCriarAberto(false);
-      carregarConsultas();
-    } catch (error) {
-      alert(error.response?.data?.erro || 'Erro ao marcar consulta.');
     }
   };
 
@@ -180,7 +155,7 @@ export default function ConsultasView() {
     <div>
       <div className="page-header">
         <h2 className="page-title">Consultas</h2>
-        {permissoes.eRececionista && (
+        {permissoes.podeMarcar && (
           <button className="btn btn-primary" onClick={() => setModalCriarAberto(true)}>
             <Plus size={20} /> Marcar Consulta
           </button>
@@ -229,81 +204,9 @@ export default function ConsultasView() {
         </table>
       </div>
 
-      {/* Modal Marcar Consulta (Apenas Rececionista) */}
+      {/* Modal Marcar Consulta (componente partilhado com o Dashboard) */}
       {modalCriarAberto && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2 className="modal-title modal-header">Marcar Consulta</h2>
-            <form onSubmit={handleCriarConsulta}>
-              <div className="field">
-                <label>Paciente</label>
-                <select
-                  className="input"
-                  required
-                  value={formData.pacienteId}
-                  onChange={(e) => setFormData({ ...formData, pacienteId: e.target.value })}
-                >
-                  <option value="">Selecione um paciente...</option>
-                  {pacientes.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nome || p.dadosPessoais?.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field">
-                <label>Fisioterapeuta</label>
-                <select
-                  className="input"
-                  required
-                  value={formData.fisioterapeutaId}
-                  onChange={(e) => setFormData({ ...formData, fisioterapeutaId: e.target.value })}
-                >
-                  <option value="">Selecione um fisioterapeuta...</option>
-                  {fisioterapeutas.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.nome || f.dadosPessoais?.nome} {f.especialidade ? `(${f.especialidade})` : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field">
-                <label>Data e Hora</label>
-                <input
-                  className="input"
-                  type="datetime-local"
-                  required
-                  value={formData.dataHora}
-                  onChange={(e) => setFormData({ ...formData, dataHora: e.target.value })}
-                />
-              </div>
-
-              <div className="field">
-                <label>Duração (minutos)</label>
-                <input
-                  className="input"
-                  type="number"
-                  min="15"
-                  step="15"
-                  required
-                  value={formData.duracaoMinutos}
-                  onChange={(e) => setFormData({ ...formData, duracaoMinutos: e.target.value })}
-                />
-              </div>
-
-              <div className="btn-row">
-                <button type="button" className="btn btn-secondary" onClick={() => setModalCriarAberto(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Confirmar Marcação
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <MarcarConsultaModal onFechar={() => setModalCriarAberto(false)} onCriada={carregarConsultas} />
       )}
 
       {/* Modal Detalhes / Registo Clínico */}

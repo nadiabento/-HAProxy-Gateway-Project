@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import DatePicker from '../components/DatePicker';
 import axios from 'axios';
 
 export default function FuncionariosView() {
@@ -15,8 +16,23 @@ export default function FuncionariosView() {
   });
 
   const [editData, setEditData] = useState({
-    id: null, nome: '', email: '', contacto: '', data_nascimento: '', morada: ''
+    id: null, nome: '', email: '', contacto: '', data_nascimento: '', morada: '', tipo: 'Fisioterapeuta', especialidade: ''
   });
+
+  const abrirModalEdicao = (func) => {
+    const dataBruta = func.data_nascimento || func.dataNascimento || '';
+    setEditData({
+      id: func.id,
+      nome: func.nome || '',
+      email: func.email || '',
+      contacto: func.contacto || '',
+      data_nascimento: dataBruta ? String(dataBruta).split('T')[0] : '',
+      morada: func.morada || '',
+      tipo: func.tipo || 'Fisioterapeuta',
+      especialidade: func.especialidade || ''
+    });
+    setModalEditAberto(true);
+  };
 
   const carregarFuncionarios = async () => {
     try {
@@ -64,7 +80,7 @@ export default function FuncionariosView() {
       });
       setModalEditAberto(false);
       carregarFuncionarios();
-    } catch (error) { alert('Erro ao guardar.'); }
+    } catch (error) { alert(error.response?.data?.error || 'Erro ao guardar.'); }
   };
 
   const handleDelete = async () => {
@@ -81,6 +97,46 @@ export default function FuncionariosView() {
   };
 
   if (acessoNegado) return <div style={{ textAlign: 'center', marginTop: 'var(--space-10)', color: 'var(--color-danger)', fontWeight: 'var(--font-weight-semibold)' }}>Acesso Restrito ao Administrador.</div>;
+
+  const hoje = new Date().toISOString().split('T')[0];
+
+  // Campos partilhados pelos modais Registar e Editar (a palavra-passe só aparece no registo)
+  const camposFuncionario = (dados, setDados, comPassword) => {
+    const eAdmin = dados.tipo === 'Administrador';
+    return (
+      <>
+        <div className="field"><label>Nome Completo</label><input className="input" type="text" required value={dados.nome} onChange={e => setDados({...dados, nome: e.target.value})} /></div>
+        <div className="field"><label>E-mail</label><input className="input" type="email" required value={dados.email} onChange={e => setDados({...dados, email: e.target.value})} /></div>
+        <div className="field-grid">
+          <div className="field"><label>Contacto</label><input className="input" type="text" value={dados.contacto || ''} onChange={e => setDados({...dados, contacto: e.target.value})} /></div>
+          <div className="field"><label>Data de Nascimento</label><DatePicker value={dados.data_nascimento || ''} onChange={v => setDados({...dados, data_nascimento: v})} max={hoje} anoSugerido={1990} /></div>
+        </div>
+        <div className="field"><label>Morada</label><input className="input" type="text" value={dados.morada || ''} onChange={e => setDados({...dados, morada: e.target.value})} /></div>
+        {comPassword && (
+          <div className="field"><label>Palavra-passe</label><input className="input" type="password" required value={dados.password} onChange={e => setDados({...dados, password: e.target.value})} /></div>
+        )}
+
+        {!eAdmin && (
+          <div className="field-grid">
+            <div className="field">
+              <label>Cargo</label>
+              <select className="input" value={dados.tipo} onChange={e => setDados({...dados, tipo: e.target.value})}>
+                <option value="Fisioterapeuta">Fisioterapeuta</option>
+                <option value="Rececionista">Rececionista</option>
+              </select>
+            </div>
+
+            {dados.tipo === 'Fisioterapeuta' && (
+              <div className="field">
+                <label>Especialidade</label>
+                <input className="input" type="text" placeholder="Ex: Osteopatia" value={dados.especialidade || ''} onChange={e => setDados({...dados, especialidade: e.target.value})} />
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div>
@@ -113,7 +169,7 @@ export default function FuncionariosView() {
                 <td className="actions">
                   {func.tipo !== 'Administrador' && (
                     <>
-                      <button className="btn-icon" title="Editar funcionário" onClick={() => { setEditData(func); setModalEditAberto(true); }}><Pencil size={18} /></button>
+                      <button className="btn-icon" title="Editar funcionário" onClick={() => abrirModalEdicao(func)}><Pencil size={18} /></button>
                       <button className="btn-icon danger" title="Eliminar funcionário" onClick={() => setFuncionarioAApagar(func)}><Trash2 size={18} /></button>
                     </>
                   )}
@@ -129,27 +185,7 @@ export default function FuncionariosView() {
           <div className="modal">
             <h2 className="modal-title modal-header">Registar Funcionário</h2>
             <form onSubmit={handleSubmit}>
-              <div className="field"><label>Nome Completo</label><input className="input" type="text" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} /></div>
-              <div className="field"><label>E-mail</label><input className="input" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
-              <div className="field"><label>Contacto</label><input className="input" type="text" value={formData.contacto} onChange={e => setFormData({...formData, contacto: e.target.value})} /></div>
-              <div className="field"><label>Data de Nascimento</label><input className="input" type="date" value={formData.data_nascimento} onChange={e => setFormData({...formData, data_nascimento: e.target.value})} /></div>
-              <div className="field"><label>Morada</label><input className="input" type="text" value={formData.morada} onChange={e => setFormData({...formData, morada: e.target.value})} /></div>
-              <div className="field"><label>Palavra-passe</label><input className="input" type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} /></div>
-
-              <div className="field">
-                <label>Cargo</label>
-                <select className="input" value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value})}>
-                  <option value="Fisioterapeuta">Fisioterapeuta</option>
-                  <option value="Rececionista">Rececionista</option>
-                </select>
-              </div>
-
-              {formData.tipo === 'Fisioterapeuta' && (
-                <div className="field">
-                  <label>Especialidade</label>
-                  <input className="input" type="text" placeholder="Ex: Osteopatia" value={formData.especialidade} onChange={e => setFormData({...formData, especialidade: e.target.value})} />
-                </div>
-              )}
+              {camposFuncionario(formData, setFormData, true)}
 
               <div className="btn-row">
                 <button type="button" className="btn btn-secondary" onClick={() => setModalAberto(false)}>Cancelar</button>
@@ -160,15 +196,13 @@ export default function FuncionariosView() {
         </div>
       )}
 
-      {/* Modal Editar (os campos são os mesmos, sem palavra-passe nem cargo) */}
+      {/* Modal Editar: os mesmos campos do registo, menos a palavra-passe */}
       {modalEditAberto && (
         <div className="modal-overlay">
           <div className="modal">
             <h2 className="modal-title modal-header">Editar Funcionário</h2>
             <form onSubmit={handleEditSubmit}>
-              <div className="field"><label>Nome</label><input className="input" type="text" required value={editData.nome} onChange={e => setEditData({...editData, nome: e.target.value})} /></div>
-              <div className="field"><label>Contacto</label><input className="input" type="text" value={editData.contacto || ''} onChange={e => setEditData({...editData, contacto: e.target.value})} /></div>
-              <div className="field"><label>Morada</label><input className="input" type="text" value={editData.morada || ''} onChange={e => setEditData({...editData, morada: e.target.value})} /></div>
+              {camposFuncionario(editData, setEditData, false)}
               <div className="btn-row">
                 <button type="button" className="btn btn-secondary" onClick={() => setModalEditAberto(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary">Guardar</button>
