@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Eye, Trash2 } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
 import axios from 'axios';
 
 export default function ConsultasView() {
@@ -9,6 +10,7 @@ export default function ConsultasView() {
 
   const [modalCriarAberto, setModalCriarAberto] = useState(false);
   const [consultaSelecionada, setConsultaSelecionada] = useState(null);
+  const [consultaAApagar, setConsultaAApagar] = useState(null);
 
   const [permissoes, setPermissoes] = useState({
     eRececionista: false,
@@ -135,8 +137,10 @@ export default function ConsultasView() {
     }
   };
 
-  const handleApagar = async (id) => {
-    if (!window.confirm('Eliminar esta consulta permanentemente?')) return;
+  const handleApagar = async () => {
+    const id = consultaAApagar?.id;
+    setConsultaAApagar(null);
+    if (!id) return;
     try {
       await axios.delete(`http://localhost:3000/api/consultas/${id}`, {
         headers: getHeaders(),
@@ -160,106 +164,60 @@ export default function ConsultasView() {
   };
 
   const badgeEstado = (estado) => {
-    const cores = {
-      agendada: { bg: '#e0f2fe', color: '#0369a1' },
-      realizada: { bg: '#dcfce7', color: '#15803d' },
-      cancelada: { bg: '#fee2e2', color: '#b91c1c' },
+    const classes = {
+      agendada: 'badge-primary',
+      realizada: 'badge-success',
+      cancelada: 'badge-danger',
     };
-    const estilo = cores[estado] || { bg: '#f1f5f9', color: '#475569' };
     return (
-      <span
-        style={{
-          backgroundColor: estilo.bg,
-          color: estilo.color,
-          padding: '4px 10px',
-          borderRadius: '999px',
-          fontSize: '12px',
-          fontWeight: 600,
-          textTransform: 'capitalize',
-        }}
-      >
+      <span className={`badge ${classes[estado] || 'badge-neutral'}`}>
         {estado || 'agendada'}
       </span>
     );
   };
 
-  const inputStyle = {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '8px',
-    border: '1px solid #cbd5e1',
-    marginBottom: '12px',
-    fontSize: '14px',
-    outline: 'none',
-    boxSizing: 'border-box',
-  };
-
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <h2>Consultas</h2>
+      <div className="page-header">
+        <h2 className="page-title">Consultas</h2>
         {permissoes.eRececionista && (
-          <button
-            onClick={() => setModalCriarAberto(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#0284c7',
-              color: 'white',
-              border: 'none',
-              padding: '12px 20px',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
-          >
+          <button className="btn btn-primary" onClick={() => setModalCriarAberto(true)}>
             <Plus size={20} /> Marcar Consulta
           </button>
         )}
       </div>
 
-      <div style={{ backgroundColor: 'white', borderRadius: '16px', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ backgroundColor: '#f8fafc' }}>
+      <div className="card">
+        <table className="table">
+          <thead>
             <tr>
-              <th style={{ padding: '16px' }}>DATA / HORA</th>
-              <th style={{ padding: '16px' }}>PACIENTE</th>
-              <th style={{ padding: '16px' }}>FISIOTERAPEUTA</th>
-              <th style={{ padding: '16px' }}>DURAÇÃO</th>
-              <th style={{ padding: '16px' }}>ESTADO</th>
-              <th style={{ padding: '16px', textAlign: 'right' }}>AÇÕES</th>
+              <th>Data / Hora</th>
+              <th>Paciente</th>
+              <th>Fisioterapeuta</th>
+              <th>Duração</th>
+              <th>Estado</th>
+              <th className="actions">Ações</th>
             </tr>
           </thead>
           <tbody>
             {consultas.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
-                  Nenhuma consulta registada.
-                </td>
+                <td colSpan="6" className="empty">Nenhuma consulta registada.</td>
               </tr>
             ) : (
               consultas.map((c) => (
-                <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '16px' }}>{formatarDataHora(c.dataHora)}</td>
-                  <td style={{ padding: '16px' }}>{c.paciente?.dadosPessoais?.nome || '-'}</td>
-                  <td style={{ padding: '16px' }}>{c.fisioterapeuta?.dadosPessoais?.nome || '-'}</td>
-                  <td style={{ padding: '16px' }}>{c.duracaoMinutos ? `${c.duracaoMinutos} min` : '45 min'}</td>
-                  <td style={{ padding: '16px' }}>{badgeEstado(c.estado)}</td>
-                  <td style={{ padding: '16px', textAlign: 'right' }}>
-                    <button
-                      onClick={() => abrirDetalhes(c)}
-                      title="Ver / Editar Consulta"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0284c7', marginRight: '12px' }}
-                    >
+                <tr key={c.id}>
+                  <td>{formatarDataHora(c.dataHora)}</td>
+                  <td>{c.paciente?.dadosPessoais?.nome || '-'}</td>
+                  <td>{c.fisioterapeuta?.dadosPessoais?.nome || '-'}</td>
+                  <td>{c.duracaoMinutos ? `${c.duracaoMinutos} min` : '45 min'}</td>
+                  <td>{badgeEstado(c.estado)}</td>
+                  <td className="actions">
+                    <button className="btn-icon" onClick={() => abrirDetalhes(c)} title="Ver / Editar Consulta">
                       <Eye size={18} />
                     </button>
                     {permissoes.eAdmin && (
-                      <button
-                        onClick={() => handleApagar(c.id)}
-                        title="Eliminar Consulta"
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-                      >
+                      <button className="btn-icon danger" onClick={() => setConsultaAApagar(c)} title="Eliminar Consulta">
                         <Trash2 size={18} />
                       </button>
                     )}
@@ -273,65 +231,73 @@ export default function ConsultasView() {
 
       {/* Modal Marcar Consulta (Apenas Rececionista) */}
       {modalCriarAberto && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '500px' }}>
-            <h2 style={{ marginTop: 0 }}>Marcar Consulta</h2>
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2 className="modal-title modal-header">Marcar Consulta</h2>
             <form onSubmit={handleCriarConsulta}>
-              <label>Paciente</label>
-              <select
-                required
-                style={inputStyle}
-                value={formData.pacienteId}
-                onChange={(e) => setFormData({ ...formData, pacienteId: e.target.value })}
-              >
-                <option value="">Selecione um paciente...</option>
-                {pacientes.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nome || p.dadosPessoais?.nome}
-                  </option>
-                ))}
-              </select>
+              <div className="field">
+                <label>Paciente</label>
+                <select
+                  className="input"
+                  required
+                  value={formData.pacienteId}
+                  onChange={(e) => setFormData({ ...formData, pacienteId: e.target.value })}
+                >
+                  <option value="">Selecione um paciente...</option>
+                  {pacientes.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nome || p.dadosPessoais?.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <label>Fisioterapeuta</label>
-              <select
-                required
-                style={inputStyle}
-                value={formData.fisioterapeutaId}
-                onChange={(e) => setFormData({ ...formData, fisioterapeutaId: e.target.value })}
-              >
-                <option value="">Selecione um fisioterapeuta...</option>
-                {fisioterapeutas.map((f) => (
-                  <option key={f.id} value={f.id}>
-                    {f.nome || f.dadosPessoais?.nome} {f.especialidade ? `(${f.especialidade})` : ''}
-                  </option>
-                ))}
-              </select>
+              <div className="field">
+                <label>Fisioterapeuta</label>
+                <select
+                  className="input"
+                  required
+                  value={formData.fisioterapeutaId}
+                  onChange={(e) => setFormData({ ...formData, fisioterapeutaId: e.target.value })}
+                >
+                  <option value="">Selecione um fisioterapeuta...</option>
+                  {fisioterapeutas.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nome || f.dadosPessoais?.nome} {f.especialidade ? `(${f.especialidade})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <label>Data e Hora</label>
-              <input
-                type="datetime-local"
-                required
-                style={inputStyle}
-                value={formData.dataHora}
-                onChange={(e) => setFormData({ ...formData, dataHora: e.target.value })}
-              />
+              <div className="field">
+                <label>Data e Hora</label>
+                <input
+                  className="input"
+                  type="datetime-local"
+                  required
+                  value={formData.dataHora}
+                  onChange={(e) => setFormData({ ...formData, dataHora: e.target.value })}
+                />
+              </div>
 
-              <label>Duração (minutos)</label>
-              <input
-                type="number"
-                min="15"
-                step="15"
-                required
-                style={inputStyle}
-                value={formData.duracaoMinutos}
-                onChange={(e) => setFormData({ ...formData, duracaoMinutos: e.target.value })}
-              />
+              <div className="field">
+                <label>Duração (minutos)</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="15"
+                  step="15"
+                  required
+                  value={formData.duracaoMinutos}
+                  onChange={(e) => setFormData({ ...formData, duracaoMinutos: e.target.value })}
+                />
+              </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setModalCriarAberto(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer' }}>
+              <div className="btn-row">
+                <button type="button" className="btn btn-secondary" onClick={() => setModalCriarAberto(false)}>
                   Cancelar
                 </button>
-                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#0284c7', color: 'white', border: 'none', cursor: 'pointer' }}>
+                <button type="submit" className="btn btn-primary">
                   Confirmar Marcação
                 </button>
               </div>
@@ -342,60 +308,70 @@ export default function ConsultasView() {
 
       {/* Modal Detalhes / Registo Clínico */}
       {consultaSelecionada && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '520px' }}>
-            <h2 style={{ marginTop: 0 }}>Detalhes da Consulta</h2>
-            <p style={{ color: '#64748b', fontSize: '14px', marginTop: '-8px', marginBottom: '16px' }}>
-              <strong>Paciente:</strong> {consultaSelecionada.paciente?.dadosPessoais?.nome} |{' '}
-              <strong>Fisioterapeuta:</strong> {consultaSelecionada.fisioterapeuta?.dadosPessoais?.nome}
-            </p>
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Detalhes da Consulta</h2>
+              <p className="modal-text">
+                <strong>Paciente:</strong> {consultaSelecionada.paciente?.dadosPessoais?.nome} |{' '}
+                <strong>Fisioterapeuta:</strong> {consultaSelecionada.fisioterapeuta?.dadosPessoais?.nome}
+              </p>
+            </div>
 
             <form onSubmit={handleGuardarDetalhes}>
-              <label>Estado</label>
-              <select
-                disabled={!permissoes.eStaff}
-                style={inputStyle}
-                value={editClinico.estado}
-                onChange={(e) => setEditClinico({ ...editClinico, estado: e.target.value })}
-              >
-                <option value="agendada">Agendada</option>
-                <option value="realizada">Realizada</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
+              <div className="field">
+                <label>Estado</label>
+                <select
+                  className="input"
+                  disabled={!permissoes.eStaff}
+                  value={editClinico.estado}
+                  onChange={(e) => setEditClinico({ ...editClinico, estado: e.target.value })}
+                >
+                  <option value="agendada">Agendada</option>
+                  <option value="realizada">Realizada</option>
+                  <option value="cancelada">Cancelada</option>
+                </select>
+              </div>
 
-              <label>Diagnóstico</label>
-              <textarea
-                rows="2"
-                disabled={!permissoes.eStaff}
-                style={inputStyle}
-                value={editClinico.diagnostico}
-                onChange={(e) => setEditClinico({ ...editClinico, diagnostico: e.target.value })}
-              />
+              <div className="field">
+                <label>Diagnóstico</label>
+                <textarea
+                  className="input"
+                  rows="2"
+                  disabled={!permissoes.eStaff}
+                  value={editClinico.diagnostico}
+                  onChange={(e) => setEditClinico({ ...editClinico, diagnostico: e.target.value })}
+                />
+              </div>
 
-              <label>Evolução Clínica</label>
-              <textarea
-                rows="2"
-                disabled={!permissoes.eStaff}
-                style={inputStyle}
-                value={editClinico.evolucaoClinica}
-                onChange={(e) => setEditClinico({ ...editClinico, evolucaoClinica: e.target.value })}
-              />
+              <div className="field">
+                <label>Evolução Clínica</label>
+                <textarea
+                  className="input"
+                  rows="2"
+                  disabled={!permissoes.eStaff}
+                  value={editClinico.evolucaoClinica}
+                  onChange={(e) => setEditClinico({ ...editClinico, evolucaoClinica: e.target.value })}
+                />
+              </div>
 
-              <label>Observações</label>
-              <textarea
-                rows="2"
-                disabled={!permissoes.eStaff}
-                style={inputStyle}
-                value={editClinico.observacoes}
-                onChange={(e) => setEditClinico({ ...editClinico, observacoes: e.target.value })}
-              />
+              <div className="field">
+                <label>Observações</label>
+                <textarea
+                  className="input"
+                  rows="2"
+                  disabled={!permissoes.eStaff}
+                  value={editClinico.observacoes}
+                  onChange={(e) => setEditClinico({ ...editClinico, observacoes: e.target.value })}
+                />
+              </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setConsultaSelecionada(null)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer' }}>
+              <div className="btn-row">
+                <button type="button" className="btn btn-secondary" onClick={() => setConsultaSelecionada(null)}>
                   Fechar
                 </button>
                 {permissoes.eStaff && (
-                  <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#0284c7', color: 'white', border: 'none', cursor: 'pointer' }}>
+                  <button type="submit" className="btn btn-primary">
                     Guardar Alterações
                   </button>
                 )}
@@ -404,6 +380,18 @@ export default function ConsultasView() {
           </div>
         </div>
       )}
+
+      {/* Confirmação de eliminação */}
+      <ConfirmModal
+        open={!!consultaAApagar}
+        icon={Trash2}
+        title="Eliminar Consulta"
+        message="Tens a certeza que pretendes eliminar esta consulta permanentemente? Esta ação não pode ser desfeita."
+        confirmLabel="Sim, eliminar"
+        variant="danger"
+        onConfirm={handleApagar}
+        onCancel={() => setConsultaAApagar(null)}
+      />
     </div>
   );
 }
