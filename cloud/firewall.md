@@ -6,6 +6,9 @@
 | ----- | ------------------- | ----------------------------------- |
 | 22    | SSH                 | administradores                     |
 | 80    | HAProxy (portal)    | todos                               |
+| 81    | HAProxy 2 (portal)  | todos (2.º HAProxy)                 |
+| 8404  | HAProxy (stats)     | com utilizador e palavra-passe      |
+| 8405  | HAProxy 2 (stats)   | com utilizador e palavra-passe      |
 | 8404  | HAProxy (stats)     | com utilizador e palavra-passe      |
 | 8080  | Frontend            | só o HAProxy                        |
 | 3000  | Backend             | só a própria máquina                |
