@@ -20,7 +20,7 @@ export default function Sidebar() {
   const [contaAberta, setContaAberta] = useState(false);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/auth/me', {
+    axios.get('/api/auth/me', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     })
       .then((r) => setConta(r.data))

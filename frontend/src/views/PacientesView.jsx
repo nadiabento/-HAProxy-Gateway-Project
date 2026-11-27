@@ -37,7 +37,7 @@ export default function PacientesView() {
   const carregarPacientes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/pacientes', {
+      const response = await axios.get('/api/pacientes', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPacientes(response.data);
@@ -62,7 +62,7 @@ export default function PacientesView() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/pacientes/${editData.id}`, {
+      await axios.put(`/api/pacientes/${editData.id}`, {
         ...editData,
         dataNascimento: editData.data_nascimento
       }, { headers: { Authorization: `Bearer ${token}` }});
@@ -77,7 +77,7 @@ export default function PacientesView() {
     if (!id) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/pacientes/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+      await axios.delete(`/api/pacientes/${id}`, { headers: { Authorization: `Bearer ${token}` }});
       carregarPacientes();
     } catch (error) { alert("Erro ao eliminar."); }
   };

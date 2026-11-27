@@ -9,7 +9,7 @@ import { DateTimePicker } from './DatePicker';
 // <MarcarConsultaModal onFechar={() => ...} onCriada={() => ...} />
 // ---------------------------------------------------------------
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 const VAZIO = { pacienteId: '', fisioterapeutaId: '', dataHora: '', duracaoMinutos: 45 };
 
 export default function MarcarConsultaModal({ onFechar, onCriada }) {

@@ -78,7 +78,7 @@ export default function ConsultasView() {
 
   const carregarConsultas = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/consultas', {
+      const res = await axios.get('/api/consultas', {
         headers: getHeaders(),
       });
       setConsultas(res.data);
@@ -101,7 +101,7 @@ export default function ConsultasView() {
     e.preventDefault();
     try {
       await axios.put(
-        `http://localhost:3000/api/consultas/${consultaSelecionada.id}`,
+        `/api/consultas/${consultaSelecionada.id}`,
         editClinico,
         { headers: getHeaders() }
       );
@@ -117,7 +117,7 @@ export default function ConsultasView() {
     setConsultaAApagar(null);
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:3000/api/consultas/${id}`, {
+      await axios.delete(`/api/consultas/${id}`, {
         headers: getHeaders(),
       });
       carregarConsultas();

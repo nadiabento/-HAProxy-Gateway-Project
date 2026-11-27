@@ -37,7 +37,7 @@ export default function FuncionariosView() {
   const carregarFuncionarios = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/utilizadores', {
+      const response = await axios.get('/api/utilizadores', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFuncionarios(response.data);
@@ -62,7 +62,7 @@ export default function FuncionariosView() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token'); 
-      await axios.post('http://localhost:3000/api/utilizadores', formData, {
+      await axios.post('/api/utilizadores', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ nome: '', email: '', password: '', tipo: 'Fisioterapeuta', contacto: '', data_nascimento: '', morada: '', especialidade: '' });
@@ -75,7 +75,7 @@ export default function FuncionariosView() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/utilizadores/${editData.id}`, editData, {
+      await axios.put(`/api/utilizadores/${editData.id}`, editData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setModalEditAberto(false);
@@ -89,7 +89,7 @@ export default function FuncionariosView() {
     if (!id) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/utilizadores/${id}`, {
+      await axios.delete(`/api/utilizadores/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       carregarFuncionarios();

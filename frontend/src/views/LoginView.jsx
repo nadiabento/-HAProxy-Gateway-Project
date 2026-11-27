@@ -12,7 +12,7 @@ export default function LoginView() {
     e.preventDefault();
     try {
       // Faz o pedido ao backend
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('/api/auth/login', {
         email: email,
         password: password
       });

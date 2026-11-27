@@ -34,7 +34,7 @@ export default function NovoPacienteModal({ onFechar, onCriado }) {
     setAGuardar(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/pacientes', {
+      await axios.post('/api/pacientes', {
         ...dados,
         dataNascimento: dados.data_nascimento,
       }, { headers: { Authorization: `Bearer ${token}` } });

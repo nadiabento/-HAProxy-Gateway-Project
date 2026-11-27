@@ -13,7 +13,7 @@ import { CalendarDays, CalendarClock, Users, Briefcase, Plus, UserPlus, ChevronR
 //   - fisioterapeuta: só as suas consultas
 // ---------------------------------------------------------------
 
-const API = 'http://localhost:3000/api';
+const API = '/api';
 
 const lerSessao = () => {
   try {

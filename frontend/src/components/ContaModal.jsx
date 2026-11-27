@@ -10,7 +10,7 @@ import { iniciais, nomeCargo } from '../utils/conta';
 // <ContaModal onFechar={() => ...} onAtualizado={(dados) => ...} />
 // ---------------------------------------------------------------
 
-const API = 'http://localhost:3000/api/auth';
+const API = '/api/auth';
 const headers = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
 
 function Aviso({ tipo, children }) {
