@@ -1,0 +1,131 @@
+/* Seletor de datas do PRC – usa os tokens de styles/tokens.css */
+
+.dp { position: relative; width: 100%; }
+.dp-input { padding-right: 44px; }
+
+.dp-icon {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.dp-icon:hover:not(:disabled) { background-color: var(--color-primary-soft); color: var(--color-primary); }
+.dp-icon:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.dp-popover {
+  position: fixed;
+  z-index: 1100;
+  width: 320px;
+  box-sizing: border-box;
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  font-family: var(--font-family);
+}
+
+.dp-header { display: flex; align-items: center; gap: 6px; margin-bottom: var(--space-3); }
+
+.dp-nav {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.dp-nav:hover { background-color: var(--color-surface-muted); }
+
+.dp-select {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  padding: 0 24px 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-strong);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.dp-select.mes { flex: 1.5; }
+.dp-select:focus { border-color: var(--color-primary); box-shadow: var(--focus-ring); }
+
+.dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+
+.dp-weekday {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-subtle);
+  padding: var(--space-1) 0 6px;
+}
+
+.dp-day {
+  height: 34px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.dp-day:hover:not(:disabled) { background-color: var(--color-primary-soft); color: var(--color-primary); }
+.dp-day.outside { color: var(--color-text-subtle); }
+.dp-day.today { color: var(--color-primary); font-weight: var(--font-weight-bold); box-shadow: inset 0 0 0 1px var(--color-primary); }
+.dp-day.selected,
+.dp-day.selected:hover { background-color: var(--color-primary); color: #fff; font-weight: var(--font-weight-semibold); box-shadow: none; }
+.dp-day:disabled { color: var(--color-border); cursor: not-allowed; }
+
+.dp-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+.dp-link {
+  border: none;
+  background: none;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+.dp-link:hover { background-color: var(--color-primary-soft); }
+
+/* Data + hora lado a lado */
+.dp-datetime { display: flex; gap: var(--space-3); }
+.dp-datetime .dp { flex: 1; }
+.dp-time { width: 120px; flex-shrink: 0; }

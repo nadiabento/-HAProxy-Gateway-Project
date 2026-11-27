@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Calendar, Settings, LogOut, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, LogOut, Briefcase } from 'lucide-react';
 import logo from '../assets/logo-prc.jpg';
 import ConfirmModal from './ConfirmModal';
+import ContaModal from './ContaModal';
+import { iniciais, nomeCargo } from '../utils/conta';
 import './Sidebar.css';
 
 export default function Sidebar() {
@@ -11,6 +14,18 @@ export default function Sidebar() {
   
   // Estado para controlar se a janela de aviso está visível (true) ou escondida (false)
   const [mostrarAviso, setMostrarAviso] = useState(false);
+
+  // Utilizador com sessão iniciada (nome e cargo aparecem no fundo da sidebar)
+  const [conta, setConta] = useState(null);
+  const [contaAberta, setContaAberta] = useState(false);
+
+  useEffect(() => {
+    axios.get('/api/auth/me', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then((r) => setConta(r.data))
+      .catch((e) => console.error('Erro ao carregar a conta:', e));
+  }, []);
 
   const getLinkClass = (path) => {
     return location.pathname === path ? 'menu-link ativo' : 'menu-link inativo';
@@ -74,9 +89,13 @@ export default function Sidebar() {
 
         <div className="sidebar-footer">
           <p className="sidebar-section-label">Conta</p>
-          <Link to="/perfil" className={getLinkClass('/perfil')}>
-            <Settings size={20} /> Definições
-          </Link>
+          <button type="button" className="user-card" onClick={() => setContaAberta(true)} title="Gerir a minha conta">
+            <div className="avatar">{iniciais(conta?.nome)}</div>
+            <div className="user-card-info">
+              <span className="user-card-nome">{conta?.nome || 'A carregar…'}</span>
+              <span className="user-card-cargo">{nomeCargo(conta?.perfis)}</span>
+            </div>
+          </button>
 
           {/* Abre o modal de confirmação em vez de mudar de página */}
           <a href="#" onClick={handleTerminarSessao} className="menu-link menu-logout">
@@ -89,6 +108,11 @@ export default function Sidebar() {
       <main className="main-content">
         <Outlet />
       </main>
+
+      {/* Modal "A minha conta" */}
+      {contaAberta && (
+        <ContaModal onFechar={() => setContaAberta(false)} onAtualizado={setConta} />
+      )}
 
       {/* Modal de referência do design system */}
       <ConfirmModal

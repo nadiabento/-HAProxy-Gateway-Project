@@ -3,7 +3,9 @@ const { sequelize, Utilizador, DadosPessoais, Rececionista, Fisioterapeuta, Perf
 
 exports.criarFuncionario = async (req, res) => {
   // 1. Receber os novos campos
-  const { nome, email, password, tipo, contacto, data_nascimento, morada, especialidade } = req.body;
+  const { nome, email, password, tipo, contacto, morada, especialidade } = req.body;
+  // O modelo DadosPessoais chama ao campo "dataNascimento"; aceitamos os dois nomes
+  const dataNasc = req.body.dataNascimento || req.body.data_nascimento || null;
   const transaction = await sequelize.transaction();
 
   try {
@@ -18,7 +20,7 @@ exports.criarFuncionario = async (req, res) => {
       nome, 
       email,
       contacto,
-      data_nascimento: data_nascimento || null,
+      dataNascimento: dataNasc,
       morada
     }, { transaction });
 
@@ -57,21 +59,30 @@ exports.listarFuncionarios = async (req, res) => {
     const utilizadores = await Utilizador.findAll({
       attributes: ['id', 'estado'],
       include: [
-        { model: DadosPessoais, as: 'dadosPessoais' },
+        {
+          model: DadosPessoais,
+          as: 'dadosPessoais',
+          include: [{ model: Fisioterapeuta, as: 'fisioterapeuta', attributes: ['especialidade'] }]
+        },
         { model: Perfil, as: 'perfis', attributes: ['tipoPerfil'] }
       ]
     });
 
     const lista = utilizadores
-      .map(u => ({
-        id: u.id,
-        estado: u.estado,
-        nome: u.dadosPessoais ? u.dadosPessoais.nome : 'Sem nome',
-        email: u.dadosPessoais ? u.dadosPessoais.email : 'Sem e-mail',
-        contacto: u.dadosPessoais ? u.dadosPessoais.contacto : '',
-        morada: u.dadosPessoais ? u.dadosPessoais.morada : '',
-        tipo: (u.perfis && u.perfis.length > 0) ? u.perfis[0].tipoPerfil : 'Sem Perfil'
-      }))
+      .map(u => {
+        const dp = u.dadosPessoais;
+        return {
+          id: u.id,
+          estado: u.estado,
+          nome: dp ? dp.nome : 'Sem nome',
+          email: dp ? dp.email : 'Sem e-mail',
+          contacto: dp ? dp.contacto : '',
+          morada: dp ? dp.morada : '',
+          data_nascimento: dp ? dp.dataNascimento : '',
+          especialidade: dp && dp.fisioterapeuta ? dp.fisioterapeuta.especialidade : '',
+          tipo: (u.perfis && u.perfis.length > 0) ? u.perfis[0].tipoPerfil : 'Sem Perfil'
+        };
+      })
       .filter(u => u.tipo.toLowerCase() !== 'paciente');
 
     res.status(200).json(lista);
@@ -80,17 +91,81 @@ exports.listarFuncionarios = async (req, res) => {
   }
 };
 
+// Edita tudo o que se preenche ao criar, menos a palavra-passe:
+// nome, e-mail, contacto, data de nascimento, morada, cargo e especialidade.
 exports.editarFuncionario = async (req, res) => {
   const { id } = req.params;
-  const { nome, email, contacto, data_nascimento, morada } = req.body;
+  const { nome, email, contacto, morada, tipo, especialidade } = req.body;
+  const dataNasc = req.body.dataNascimento !== undefined ? req.body.dataNascimento : req.body.data_nascimento;
+  const transaction = await sequelize.transaction();
 
   try {
-    const dp = await DadosPessoais.findOne({ where: { utilizadorId: id } });
-    if (!dp) return res.status(404).json({ error: 'Não encontrado.' });
+    const utilizador = await Utilizador.findByPk(id, {
+      include: [{ model: Perfil, as: 'perfis' }],
+      transaction
+    });
+    const dp = await DadosPessoais.findOne({ where: { utilizadorId: id }, transaction });
+    if (!utilizador || !dp) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Não encontrado.' });
+    }
 
-    await dp.update({ nome, email, contacto, data_nascimento, morada });
+    // 1. Dados pessoais (só mexe nos campos que vierem no pedido)
+    await dp.update({
+      ...(nome !== undefined && { nome }),
+      ...(email !== undefined && { email }),
+      ...(contacto !== undefined && { contacto }),
+      ...(morada !== undefined && { morada }),
+      ...(dataNasc !== undefined && { dataNascimento: dataNasc || null }),
+    }, { transaction });
+
+    // 2. Cargo e especialidade
+    const tipoAtual = (utilizador.perfis && utilizador.perfis[0] ? utilizador.perfis[0].tipoPerfil : '').toLowerCase();
+    const tipoNovo = tipo ? tipo.toLowerCase() : tipoAtual;
+
+    if (tipoAtual === 'administrador') {
+      // O administrador não muda de cargo
+    } else if (tipoNovo !== tipoAtual && ['fisioterapeuta', 'rececionista'].includes(tipoNovo)) {
+      if (tipoAtual === 'fisioterapeuta') {
+        const fisio = await Fisioterapeuta.findOne({ where: { dadosPessoaisId: dp.id }, transaction });
+        if (fisio) {
+          try {
+            await fisio.destroy({ transaction });
+          } catch (e) {
+            // Tem consultas associadas: não pode deixar de ser fisioterapeuta
+            await transaction.rollback();
+            return res.status(409).json({ error: 'Este fisioterapeuta tem consultas associadas e não pode mudar de cargo.' });
+          }
+        }
+      } else {
+        await Rececionista.destroy({ where: { dadosPessoaisId: dp.id }, transaction });
+      }
+
+      if (tipoNovo === 'fisioterapeuta') {
+        await Fisioterapeuta.create({ dadosPessoaisId: dp.id, especialidade: especialidade || null }, { transaction });
+      } else {
+        await Rececionista.create({ dadosPessoaisId: dp.id }, { transaction });
+      }
+
+      const nomePerfil = tipoNovo === 'rececionista' ? 'Rececionista' : 'Fisioterapeuta';
+      const [perfil] = await Perfil.findOrCreate({
+        where: { tipoPerfil: nomePerfil },
+        defaults: { tipoPerfil: nomePerfil },
+        transaction
+      });
+      await utilizador.setPerfis([perfil], { transaction });
+    } else if (tipoNovo === 'fisioterapeuta' && especialidade !== undefined) {
+      await Fisioterapeuta.update({ especialidade: especialidade || null }, { where: { dadosPessoaisId: dp.id }, transaction });
+    }
+
+    await transaction.commit();
     res.status(200).json({ message: 'Atualizado com sucesso!' });
   } catch (error) {
+    await transaction.rollback();
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ error: 'Já existe outro utilizador com esse e-mail.' });
+    }
+    console.error('Erro ao editar:', error);
     res.status(500).json({ error: 'Erro ao editar.' });
   }
 };

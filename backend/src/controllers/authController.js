@@ -137,6 +137,8 @@ module.exports = {
         nome: utilizador.dadosPessoais?.nome,
         email: utilizador.dadosPessoais?.email,
         contacto: utilizador.dadosPessoais?.contacto,
+        morada: utilizador.dadosPessoais?.morada,
+        dataNascimento: utilizador.dadosPessoais?.dataNascimento,
         estado: utilizador.estado,
         perfis: (utilizador.perfis || []).map((p) => p.tipoPerfil),
       });
@@ -145,6 +147,77 @@ module.exports = {
       return res.status(500).json({
         erro: "Erro ao obter dados do utilizador autenticado.",
       });
+    }
+  },
+  /* PUT /api/auth/me
+   * O próprio utilizador altera os seus dados pessoais (não mexe no cargo nem na palavra-passe).
+   */
+  async atualizarMe(req, res) {
+    try {
+      const dp = await DadosPessoais.findOne({ where: { utilizadorId: req.user.id } });
+      if (!dp) return res.status(404).json({ erro: "Utilizador não encontrado." });
+
+      const { nome, email, contacto, morada } = req.body;
+      const dataNasc = req.body.dataNascimento !== undefined ? req.body.dataNascimento : req.body.data_nascimento;
+
+      if (nome !== undefined && !String(nome).trim()) {
+        return res.status(400).json({ erro: "O nome não pode ficar vazio." });
+      }
+
+      await dp.update({
+        ...(nome !== undefined && { nome: String(nome).trim() }),
+        ...(email !== undefined && { email: String(email).toLowerCase().trim() }),
+        ...(contacto !== undefined && { contacto }),
+        ...(morada !== undefined && { morada }),
+        ...(dataNasc !== undefined && { dataNascimento: dataNasc || null }),
+      });
+
+      return res.status(200).json({
+        mensagem: "Dados atualizados com sucesso.",
+        nome: dp.nome,
+        email: dp.email,
+        contacto: dp.contacto,
+        morada: dp.morada,
+        dataNascimento: dp.dataNascimento,
+      });
+    } catch (erro) {
+      if (erro.name === "SequelizeUniqueConstraintError") {
+        return res.status(409).json({ erro: "Já existe outro utilizador com esse e-mail." });
+      }
+      if (erro.name === "SequelizeValidationError") {
+        return res.status(400).json({ erro: "Dados inválidos (confirme o e-mail)." });
+      }
+      console.error("Erro no authController.atualizarMe:", erro);
+      return res.status(500).json({ erro: "Erro ao atualizar os dados." });
+    }
+  },
+
+  /* PUT /api/auth/me/password
+   * Muda a palavra-passe do próprio utilizador. Exige a palavra-passe atual.
+   */
+  async mudarPassword(req, res) {
+    try {
+      const { passwordAtual, passwordNova } = req.body;
+      if (!passwordAtual || !passwordNova) {
+        return res.status(400).json({ erro: "Indique a palavra-passe atual e a nova." });
+      }
+      if (String(passwordNova).length < 6) {
+        return res.status(400).json({ erro: "A nova palavra-passe tem de ter pelo menos 6 caracteres." });
+      }
+
+      // .unscoped() para trazer o hash (o defaultScope esconde-o)
+      const utilizador = await Utilizador.unscoped().findByPk(req.user.id);
+      if (!utilizador) return res.status(404).json({ erro: "Utilizador não encontrado." });
+
+      const valida = await bcrypt.compare(passwordAtual, utilizador.passwordHash);
+      if (!valida) return res.status(400).json({ erro: "A palavra-passe atual está errada." });
+
+      utilizador.passwordHash = await bcrypt.hash(passwordNova, 10);
+      await utilizador.save();
+      return res.status(200).json({ mensagem: "Palavra-passe alterada com sucesso." });
+    } catch (erro) {
+      console.error("Erro no authController.mudarPassword:", erro);
+      return res.status(500).json({ erro: "Erro ao alterar a palavra-passe." });
     }
   },
 };
