@@ -267,20 +267,26 @@ select.input:disabled { cursor: not-allowed; }
 }
 
 .table { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--font-size-md); }
-.table thead { background-color: var(--color-surface-muted); }
+/* Cabeçalho com cor da marca (azul suave) e linha de separação mais forte */
+.table thead { background-color: var(--color-primary-soft-strong); }
 .table th {
   padding: var(--space-4);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-muted);
+  color: var(--color-primary-hover);
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  border-bottom: 2px solid #bae6fd;
 }
-.table td { padding: var(--space-4); color: var(--color-text); border-top: 1px solid var(--color-border-subtle); }
+.table td { padding: var(--space-4); color: var(--color-text); border-top: 1px solid #e2e8f0; }
+.table tbody tr:first-child td { border-top: none; }
+.table tbody tr { transition: var(--transition); }
+.table tbody tr:hover td { background-color: var(--color-surface-muted); }
 .table .actions { text-align: right; white-space: nowrap; }
-.table tr.linha-clicavel { cursor: pointer; transition: var(--transition); }
-.table tr.linha-clicavel:hover td { background-color: var(--color-surface-muted); }
+.table tr.linha-clicavel { cursor: pointer; }
 .table .empty { text-align: center; color: var(--color-text-muted); padding: var(--space-6); }
+/* Cartão que contém uma tabela: rebordo mais visível */
+.card:has(> .table) { border: 1px solid var(--color-border); }
 
 .badge {
   display: inline-block;
