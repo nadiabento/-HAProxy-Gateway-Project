@@ -1,0 +1,36 @@
+# Réplica assíncrona da MariaDB (vm2). O primário está na vm3 (compose/db.yml).
+services:
+  db-replica:
+    build:
+      context: ../db
+      dockerfile: Dockerfile.replica
+    container_name: clinica-db-replica
+    image: clinica-db-replica:latest
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.0
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db_replica_data:/var/lib/mysql
+    ports:
+      - "${DB_REPLICA_PUBLISH_PORT:-3306}:3306"
+    networks:
+      - clinica_net
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  db_replica_data:
+    name: clinica_db_replica_data
+
+networks:
+  clinica_net:
+    name: clinica_net
