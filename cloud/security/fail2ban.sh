@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # IPs que nunca são bloqueados (a própria máquina e a rede privada)
-IGNORAR="${IGNORAR:-127.0.0.1/8 192.168.56.0/24}"
+IGNORAR="${IGNORAR:-127.0.0.1/8 10.0.2.2 192.168.56.0/24}"
 
 apt-get install -y fail2ban
 

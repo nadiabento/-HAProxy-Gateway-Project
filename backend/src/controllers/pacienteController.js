@@ -1,12 +1,22 @@
 const bcrypt = require("bcrypt");
-const { sequelize, Utilizador, DadosPessoais, Paciente } = require("../models");
+const { sequelize, Utilizador, DadosPessoais, Paciente, Consulta } = require("../models");
+const { soFisioterapeuta, meuFisioterapeutaId } = require("../utils/escopoFisioterapeuta");
 
 const incluir = [{ model: DadosPessoais, as: "dadosPessoais" }];
 const STAFF = ["administrador", "rececionista", "fisioterapeuta"];
 
 exports.listar = async (req, res, next) => {
   try {
-    const pacientes = await Paciente.findAll({ include: incluir });
+    // O fisioterapeuta só vê os pacientes que têm (ou tiveram) consultas com ele
+    let filtro = incluir;
+    if (soFisioterapeuta(req)) {
+      const meuId = (await meuFisioterapeutaId(req)) ?? -1;
+      filtro = [
+        ...incluir,
+        { model: Consulta, as: "consultas", where: { fisioterapeutaId: meuId }, attributes: [], required: true },
+      ];
+    }
+    const pacientes = await Paciente.findAll({ include: filtro });
     const lista = pacientes.map((p) => ({
       id: p.id,
       nome: p.dadosPessoais ? p.dadosPessoais.nome : "Sem nome",
@@ -30,6 +40,12 @@ exports.obter = async (req, res, next) => {
     const eStaff = (req.user.perfis || []).some((x) => STAFF.includes(x));
     if (!eStaff && p.dadosPessoais.utilizadorId !== req.user.id)
       return res.status(403).json({ erro: "Só pode ver os seus próprios dados" });
+    if (soFisioterapeuta(req)) {
+      const temConsulta = await Consulta.count({
+        where: { pacienteId: p.id, fisioterapeutaId: (await meuFisioterapeutaId(req)) ?? -1 },
+      });
+      if (!temConsulta) return res.status(403).json({ erro: "Este paciente não tem consultas consigo" });
+    }
     res.json(p);
   } catch (e) {
     next(e);

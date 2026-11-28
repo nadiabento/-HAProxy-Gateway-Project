@@ -1,6 +1,7 @@
 const {
   Consulta, ConsultaTecnica, Paciente, Fisioterapeuta, DadosPessoais, Tecnica,
 } = require("../models");
+const { soFisioterapeuta, meuFisioterapeutaId } = require("../utils/escopoFisioterapeuta");
 
 const STAFF = ["administrador", "rececionista", "fisioterapeuta"];
 const eStaff = (req) => (req.user.perfis || []).some((p) => STAFF.includes(p));
@@ -27,6 +28,11 @@ async function carregar(req, res) {
     res.status(403).json({ erro: "Só pode ver as suas consultas" });
     return null;
   }
+  // O fisioterapeuta só vê as consultas que são suas
+  if (soFisioterapeuta(req) && c.fisioterapeutaId !== (await meuFisioterapeutaId(req))) {
+    res.status(403).json({ erro: "Só pode ver as suas consultas" });
+    return null;
+  }
   return c;
 }
 
@@ -36,6 +42,8 @@ exports.listar = async (req, res, next) => {
     if (!eStaff(req)) where.pacienteId = (await meuPacienteId(req)) ?? -1;
     else if (req.query.pacienteId) where.pacienteId = req.query.pacienteId;
     if (req.query.fisioterapeutaId) where.fisioterapeutaId = req.query.fisioterapeutaId;
+    // O fisioterapeuta só vê as suas consultas (ignora qualquer filtro que venha no pedido)
+    if (soFisioterapeuta(req)) where.fisioterapeutaId = (await meuFisioterapeutaId(req)) ?? -1;
     if (req.query.estado) where.estado = req.query.estado;
     res.json(await Consulta.findAll({ where, include: incluir, order: [["dataHora", "DESC"]] }));
   } catch (e) { next(e); }
@@ -61,8 +69,16 @@ exports.atualizar = async (req, res, next) => {
   try {
     const c = await Consulta.findByPk(req.params.id);
     if (!c) return res.status(404).json({ erro: "Consulta não encontrada" });
-    const campos = ["pacienteId", "fisioterapeutaId", "dataHora", "duracaoMinutos",
-                    "estado", "diagnostico", "evolucaoClinica", "observacoes"];
+
+    // O fisioterapeuta só altera as suas consultas, e só a parte clínica e o estado
+    const fisio = soFisioterapeuta(req);
+    if (fisio && c.fisioterapeutaId !== (await meuFisioterapeutaId(req))) {
+      return res.status(403).json({ erro: "Só pode alterar as suas consultas" });
+    }
+    const campos = fisio
+      ? ["estado", "diagnostico", "evolucaoClinica", "observacoes"]
+      : ["pacienteId", "fisioterapeutaId", "dataHora", "duracaoMinutos",
+         "estado", "diagnostico", "evolucaoClinica", "observacoes"];
     const dados = {};
     for (const k of campos) if (req.body[k] !== undefined) dados[k] = req.body[k];
     await c.update(dados);
@@ -86,6 +102,9 @@ exports.adicionarTecnica = async (req, res, next) => {
   try {
     const c = await Consulta.findByPk(req.params.id);
     if (!c) return res.status(404).json({ erro: "Consulta não encontrada" });
+    if (soFisioterapeuta(req) && c.fisioterapeutaId !== (await meuFisioterapeutaId(req))) {
+      return res.status(403).json({ erro: "Só pode alterar as suas consultas" });
+    }
     const t = await Tecnica.findByPk(req.body.tecnicaId);
     if (!t) return res.status(404).json({ erro: "Técnica não encontrada" });
     if (!t.ativa) return res.status(400).json({ erro: "Técnica inativa" });
@@ -99,6 +118,13 @@ exports.adicionarTecnica = async (req, res, next) => {
 
 exports.removerTecnica = async (req, res, next) => {
   try {
+    if (soFisioterapeuta(req)) {
+      const c = await Consulta.findByPk(req.params.id);
+      if (!c) return res.status(404).json({ erro: "Consulta não encontrada" });
+      if (c.fisioterapeutaId !== (await meuFisioterapeutaId(req))) {
+        return res.status(403).json({ erro: "Só pode alterar as suas consultas" });
+      }
+    }
     const n = await ConsultaTecnica.destroy({
       where: { consultaId: req.params.id, tecnicaId: req.params.tecnicaId },
     });

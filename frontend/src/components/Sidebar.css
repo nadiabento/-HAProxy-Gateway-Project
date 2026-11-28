@@ -1,39 +1,118 @@
+/* Layout geral (sidebar + área principal) */
+.layout {
+  display: flex;
+  height: 100vh;
+  background-color: var(--color-bg-app);
+  padding: var(--space-6);
+  box-sizing: border-box;
+  gap: var(--space-6);
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-panel);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.sidebar-logo { margin-bottom: var(--space-10); text-align: center; }
+.sidebar-logo img { width: 180px; }
+.sidebar nav { flex: 1; }
+
+.sidebar-section-label {
+  font-size: 11px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin: 0 0 var(--space-3) var(--space-4);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.main-content {
+  flex: 1;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-panel);
+  padding: var(--space-10);
+  overflow-y: auto;
+}
+
 /* Estilo base para todos os links do menu */
 .menu-link {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  margin: 8px 0;
-  border-radius: 12px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  transition: all 0.2s ease;
-  font-weight: 500;
+  transition: var(--transition);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
 }
 
 /* Estado normal (inativo) */
 .menu-link.inativo {
-  color: #64748b;
+  color: var(--color-text-muted);
   background-color: transparent;
 }
-
-/* Efeito Hover (passar o rato) nos inativos */
 .menu-link.inativo:hover {
-  background-color: #f1f5f9;
-  color: #334155;
+  background-color: var(--color-border-subtle);
+  color: var(--color-text);
 }
 
-/* Estado Ativo (página atual) */
+/* Estado ativo (página atual) */
 .menu-link.ativo {
-  color: #0284c7;
-  background-color: #f0f9ff;
-  font-weight: 600;
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+  font-weight: var(--font-weight-semibold);
 }
 
-/* Efeito especial para o botão de Terminar Sessão */
+/* Terminar Sessão */
 .menu-logout {
-  color: #e11d48;
+  color: var(--color-danger);
   background-color: transparent;
 }
 .menu-logout:hover {
-  background-color: #ffe4e6;
+  background-color: var(--color-danger-soft);
 }
+
+/* Cartão do utilizador (abre o modal "A minha conta") */
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.user-card:hover { background-color: var(--color-border-subtle); }
+.user-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.user-card-nome {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-card-cargo { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+.user-card-icon { color: var(--color-text-subtle); flex-shrink: 0; }

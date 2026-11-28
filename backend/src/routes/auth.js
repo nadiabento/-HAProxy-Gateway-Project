@@ -14,5 +14,9 @@ router.post("/login", authController.login);
 // Consulta dos dados do perfil atual (exige que o cliente envie o token Bearer válido)
 router.get("/me", verificarToken, authController.me);
 
+// O próprio utilizador altera os seus dados e a sua palavra-passe
+router.put("/me", verificarToken, authController.atualizarMe);
+router.put("/me/password", verificarToken, authController.mudarPassword);
+
 // Exportação do router para montagem no app.js principal (ex: app.use("/api/auth", authRoutes))
 module.exports = router;

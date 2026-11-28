@@ -1,6 +1,6 @@
-# HAProxy no servidor da universidade. Junta-se ao compose/haproxy.yml.
+# HAProxy no servidor da universidade. Junta-se ao compose/haproxy.yml (haproxy1 e haproxy2).
 services:
-  haproxy:
+  haproxy1: &haproxy_cloud
     restart: always
     environment:
       APP1_ADDR: ${APP1_ADDR:-frontend:80}
@@ -16,6 +16,8 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  haproxy2: *haproxy_cloud
 
 networks:
   clinica_net:

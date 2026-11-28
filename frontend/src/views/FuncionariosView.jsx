@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, UserPlus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
+import DatePicker from '../components/DatePicker';
 import axios from 'axios';
 
 export default function FuncionariosView() {
@@ -7,19 +9,35 @@ export default function FuncionariosView() {
   const [modalAberto, setModalAberto] = useState(false);
   const [modalEditAberto, setModalEditAberto] = useState(false);
   const [funcionarios, setFuncionarios] = useState([]);
+  const [funcionarioAApagar, setFuncionarioAApagar] = useState(null);
   
   const [formData, setFormData] = useState({
     nome: '', email: '', password: '', tipo: 'Fisioterapeuta', contacto: '', data_nascimento: '', morada: '', especialidade: ''
   });
 
   const [editData, setEditData] = useState({
-    id: null, nome: '', email: '', contacto: '', data_nascimento: '', morada: ''
+    id: null, nome: '', email: '', contacto: '', data_nascimento: '', morada: '', tipo: 'Fisioterapeuta', especialidade: ''
   });
+
+  const abrirModalEdicao = (func) => {
+    const dataBruta = func.data_nascimento || func.dataNascimento || '';
+    setEditData({
+      id: func.id,
+      nome: func.nome || '',
+      email: func.email || '',
+      contacto: func.contacto || '',
+      data_nascimento: dataBruta ? String(dataBruta).split('T')[0] : '',
+      morada: func.morada || '',
+      tipo: func.tipo || 'Fisioterapeuta',
+      especialidade: func.especialidade || ''
+    });
+    setModalEditAberto(true);
+  };
 
   const carregarFuncionarios = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/utilizadores', {
+      const response = await axios.get('/api/utilizadores', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFuncionarios(response.data);
@@ -44,7 +62,7 @@ export default function FuncionariosView() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token'); 
-      await axios.post('http://localhost:3000/api/utilizadores', formData, {
+      await axios.post('/api/utilizadores', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ nome: '', email: '', password: '', tipo: 'Fisioterapeuta', contacto: '', data_nascimento: '', morada: '', especialidade: '' });
@@ -57,59 +75,102 @@ export default function FuncionariosView() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/utilizadores/${editData.id}`, editData, {
+      await axios.put(`/api/utilizadores/${editData.id}`, editData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setModalEditAberto(false);
       carregarFuncionarios();
-    } catch (error) { alert('Erro ao guardar.'); }
+    } catch (error) { alert(error.response?.data?.error || 'Erro ao guardar.'); }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Eliminar funcionário?")) return;
+  const handleDelete = async () => {
+    const id = funcionarioAApagar?.id;
+    setFuncionarioAApagar(null);
+    if (!id) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/api/utilizadores/${id}`, {
+      await axios.delete(`/api/utilizadores/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       carregarFuncionarios();
     } catch (error) { alert("Erro ao eliminar."); }
   };
 
-  if (acessoNegado) return <div style={{textAlign: 'center', marginTop: '50px', color: 'red'}}>Acesso Restrito ao Administrador.</div>;
+  if (acessoNegado) return <div style={{ textAlign: 'center', marginTop: 'var(--space-10)', color: 'var(--color-danger)', fontWeight: 'var(--font-weight-semibold)' }}>Acesso Restrito ao Administrador.</div>;
 
-  const inputStyle = { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '12px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' };
+  const hoje = new Date().toISOString().split('T')[0];
+
+  // Campos partilhados pelos modais Registar e Editar (a palavra-passe só aparece no registo)
+  const camposFuncionario = (dados, setDados, comPassword) => {
+    const eAdmin = dados.tipo === 'Administrador';
+    return (
+      <>
+        <div className="field"><label>Nome Completo</label><input className="input" type="text" required value={dados.nome} onChange={e => setDados({...dados, nome: e.target.value})} /></div>
+        <div className="field"><label>E-mail</label><input className="input" type="email" required value={dados.email} onChange={e => setDados({...dados, email: e.target.value})} /></div>
+        <div className="field-grid">
+          <div className="field"><label>Contacto</label><input className="input" type="text" value={dados.contacto || ''} onChange={e => setDados({...dados, contacto: e.target.value})} /></div>
+          <div className="field"><label>Data de Nascimento</label><DatePicker value={dados.data_nascimento || ''} onChange={v => setDados({...dados, data_nascimento: v})} max={hoje} anoSugerido={1990} /></div>
+        </div>
+        <div className="field"><label>Morada</label><input className="input" type="text" value={dados.morada || ''} onChange={e => setDados({...dados, morada: e.target.value})} /></div>
+        {comPassword && (
+          <div className="field"><label>Palavra-passe</label><input className="input" type="password" required value={dados.password} onChange={e => setDados({...dados, password: e.target.value})} /></div>
+        )}
+
+        {!eAdmin && (
+          <div className="field-grid">
+            <div className="field">
+              <label>Cargo</label>
+              <select className="input" value={dados.tipo} onChange={e => setDados({...dados, tipo: e.target.value})}>
+                <option value="Fisioterapeuta">Fisioterapeuta</option>
+                <option value="Rececionista">Rececionista</option>
+              </select>
+            </div>
+
+            {dados.tipo === 'Fisioterapeuta' && (
+              <div className="field">
+                <label>Especialidade</label>
+                <input className="input" type="text" placeholder="Ex: Osteopatia" value={dados.especialidade || ''} onChange={e => setDados({...dados, especialidade: e.target.value})} />
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-        <h2>Funcionários</h2>
-        <button onClick={() => setModalAberto(true)} style={{ display: 'flex', gap: '8px', backgroundColor: '#0284c7', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '12px', cursor: 'pointer' }}><Plus size={20} /> Novo Funcionário</button>
+      <div className="page-header">
+        <h2 className="page-title">Funcionários</h2>
+        <button className="btn btn-primary" onClick={() => setModalAberto(true)}><Plus size={20} /> Novo Funcionário</button>
       </div>
 
-      <div style={{ backgroundColor: 'white', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ backgroundColor: '#f8fafc' }}>
+      <div className="card">
+        <table className="table">
+          <thead>
             <tr>
-              <th style={{ padding: '16px' }}>NOME</th>
-              <th style={{ padding: '16px' }}>E-MAIL</th>
-              <th style={{ padding: '16px' }}>CONTACTO</th>
-              <th style={{ padding: '16px' }}>CARGO</th>
-              <th style={{ padding: '16px', textAlign: 'right' }}>AÇÕES</th>
+              <th>Nome</th>
+              <th>E-mail</th>
+              <th>Contacto</th>
+              <th>Cargo</th>
+              <th className="actions">Ações</th>
             </tr>
           </thead>
           <tbody>
+            {funcionarios.length === 0 && (
+              <tr><td colSpan="5" className="empty">Nenhum funcionário registado.</td></tr>
+            )}
             {funcionarios.map(func => (
-              <tr key={func.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '16px' }}>{func.nome}</td>
-                <td style={{ padding: '16px' }}>{func.email}</td>
-                <td style={{ padding: '16px' }}>{func.contacto || '-'}</td>
-                <td style={{ padding: '16px', color: '#0284c7' }}>{func.tipo}</td>
-                <td style={{ padding: '16px', textAlign: 'right' }}>
+              <tr key={func.id}>
+                <td>{func.nome}</td>
+                <td>{func.email}</td>
+                <td>{func.contacto || '-'}</td>
+                <td><span className="badge badge-primary">{func.tipo}</span></td>
+                <td className="actions">
                   {func.tipo !== 'Administrador' && (
                     <>
-                      <button onClick={() => { setEditData(func); setModalEditAberto(true); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0284c7', marginRight: '16px' }}><Pencil size={18} /></button>
-                      <button onClick={() => handleDelete(func.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={18} /></button>
+                      <button className="btn-icon" title="Editar funcionário" onClick={() => abrirModalEdicao(func)}><Pencil size={18} /></button>
+                      <button className="btn-icon danger" title="Eliminar funcionário" onClick={() => setFuncionarioAApagar(func)}><Trash2 size={18} /></button>
                     </>
                   )}
                 </td>
@@ -120,56 +181,48 @@ export default function FuncionariosView() {
       </div>
 
       {modalAberto && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2 style={{marginTop: 0}}>Registar Funcionário</h2>
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2 className="modal-title modal-header">Registar Funcionário</h2>
             <form onSubmit={handleSubmit}>
-              <label>Nome Completo</label><input type="text" required style={inputStyle} value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} />
-              <label>E-mail</label><input type="email" required style={inputStyle} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-              <label>Contacto</label><input type="text" style={inputStyle} value={formData.contacto} onChange={e => setFormData({...formData, contacto: e.target.value})} />
-              <label>Data de Nascimento</label><input type="date" style={inputStyle} value={formData.data_nascimento} onChange={e => setFormData({...formData, data_nascimento: e.target.value})} />
-              <label>Morada</label><input type="text" style={inputStyle} value={formData.morada} onChange={e => setFormData({...formData, morada: e.target.value})} />
-              <label>Palavra-passe</label><input type="password" required style={inputStyle} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
-              
-              <label>Cargo</label>
-              <select style={inputStyle} value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value})}>
-                <option value="Fisioterapeuta">Fisioterapeuta</option>
-                <option value="Rececionista">Rececionista</option>
-              </select>
+              {camposFuncionario(formData, setFormData, true)}
 
-              {formData.tipo === 'Fisioterapeuta' && (
-                <>
-                  <label>Especialidade</label>
-                  <input type="text" style={inputStyle} placeholder="Ex: Osteopatia" value={formData.especialidade} onChange={e => setFormData({...formData, especialidade: e.target.value})} />
-                </>
-              )}
-
-              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setModalAberto(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none' }}>Cancelar</button>
-                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#0284c7', color: 'white', border: 'none' }}>Criar</button>
+              <div className="btn-row">
+                <button type="button" className="btn btn-secondary" onClick={() => setModalAberto(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">Criar</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Editar (Reduzido para simplificar, os campos são os mesmos sem a pass/tipo) */}
+      {/* Modal Editar: os mesmos campos do registo, menos a palavra-passe */}
       {modalEditAberto && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '500px' }}>
-            <h2>Editar Funcionário</h2>
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2 className="modal-title modal-header">Editar Funcionário</h2>
             <form onSubmit={handleEditSubmit}>
-              <label>Nome</label><input type="text" required style={inputStyle} value={editData.nome} onChange={e => setEditData({...editData, nome: e.target.value})} />
-              <label>Contacto</label><input type="text" style={inputStyle} value={editData.contacto || ''} onChange={e => setEditData({...editData, contacto: e.target.value})} />
-              <label>Morada</label><input type="text" style={inputStyle} value={editData.morada || ''} onChange={e => setEditData({...editData, morada: e.target.value})} />
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" onClick={() => setModalEditAberto(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px' }}>Cancelar</button>
-                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#0284c7', color: 'white' }}>Guardar</button>
+              {camposFuncionario(editData, setEditData, false)}
+              <div className="btn-row">
+                <button type="button" className="btn btn-secondary" onClick={() => setModalEditAberto(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">Guardar</button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Confirmação de eliminação */}
+      <ConfirmModal
+        open={!!funcionarioAApagar}
+        icon={Trash2}
+        title="Eliminar Funcionário"
+        message={`Tens a certeza que pretendes eliminar ${funcionarioAApagar?.nome || 'este funcionário'}? Esta ação não pode ser desfeita.`}
+        confirmLabel="Sim, eliminar"
+        variant="danger"
+        onConfirm={handleDelete}
+        onCancel={() => setFuncionarioAApagar(null)}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ export default function LoginView() {
     e.preventDefault();
     try {
       // Faz o pedido ao backend
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('/api/auth/login', {
         email: email,
         password: password
       });
@@ -30,69 +30,57 @@ export default function LoginView() {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh', 
-      backgroundColor: '#f0f2f5', 
-      fontFamily: '"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' 
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      backgroundColor: 'var(--color-bg-app)',
+      padding: 'var(--space-4)',
+      boxSizing: 'border-box',
     }}>
-      
-      <div style={{ 
-        backgroundColor: 'white', 
-        padding: '40px', 
-        borderRadius: '12px', 
-        boxShadow: '0 8px 24px rgba(0,0,0,0.1)', 
-        width: '100%', 
-        maxWidth: '400px', 
-        textAlign: 'center' 
-      }}>
-        
-        <img 
-          src={logo} 
-          alt="Logótipo PRC" 
-          style={{ width: '280px', marginBottom: '20px', borderRadius: '8px' }} 
+
+      <div className="modal" style={{ maxWidth: '420px', maxHeight: 'none', padding: 'var(--space-10)', textAlign: 'center' }}>
+
+        <img
+          src={logo}
+          alt="Logótipo PRC"
+          style={{ width: '260px', maxWidth: '100%', marginBottom: 'var(--space-5)', borderRadius: 'var(--radius-sm)' }}
         />
-        
-        <h2 style={{ margin: '0 0 10px 0', color: '#333' }}>Bem-vindo</h2>
-        <p style={{ color: '#666', marginBottom: '30px', fontSize: '14px' }}>Inicie sessão para aceder ao sistema</p>
-        
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          <div style={{ textAlign: 'left' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444', fontSize: '14px' }}>E-mail</label>
-            <input 
-              type="email" 
+
+        <h2 className="modal-title" style={{ fontSize: 'var(--font-size-xl)' }}>Bem-vindo</h2>
+        <p className="modal-text" style={{ marginBottom: 'var(--space-8)' }}>Inicie sessão para aceder ao sistema</p>
+
+        <form onSubmit={handleLogin}>
+          <div className="field">
+            <label htmlFor="email">E-mail</label>
+            <input
+              className="input"
+              type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemplo@clinica.pt"
               required
-              style={{ width: '100%', padding: '12px', boxSizing: 'border-box', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '15px', outline: 'none' }}
             />
           </div>
-          
-          <div style={{ textAlign: 'left' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#444', fontSize: '14px' }}>Palavra-passe</label>
-            <input 
-              type="password" 
+
+          <div className="field">
+            <label htmlFor="password">Palavra-passe</label>
+            <input
+              className="input"
+              type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              style={{ width: '100%', padding: '12px', boxSizing: 'border-box', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '15px', outline: 'none' }}
             />
           </div>
-          
-          <button 
-            type="submit" 
-            style={{ marginTop: '10px', padding: '14px', backgroundColor: '#0ea5e9', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-          >
+
+          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 'var(--space-2)' }}>
             Entrar
           </button>
-
         </form>
       </div>
     </div>
